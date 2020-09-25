@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+
+<odoo>
+    <data>
+
+        <!--     Office Menu      -->
+        <menuitem   id="office365_parent_menu" 
+                    name="Office365 Online Connector" groups="wk_office365_connector.group_office365_manager"
+					web_icon="wk_office365_connector,static/description/banner.png"/>					
+                <menuitem id="menu_office365_parent_instance" 
+                        name="Office365 Instance" parent="wk_office365_connector.office365_parent_menu" sequence="10"/>
+                        <menuitem id="menu_office365_instance" 
+                                name="Instance" parent="wk_office365_connector.menu_office365_parent_instance"
+                                action="wk_office365_connector.office365_connection_mapping" sequence="10"/>
+    </data>
+</odoo>
+

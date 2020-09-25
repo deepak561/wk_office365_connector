@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+
+<odoo>
+	<data>
+		<record id="office365_mapping_form" model="ir.ui.view">
+			<field name="name">Office365 Connection Form</field>
+			<field name="model">office365.instance</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Office365 Instance">
+					<header>
+							<button name="test_connection"
+								type='object' 
+								icon="fa-pencil-square-o" 
+								class="oe_highlight" 
+								string='Test Connection'/>
+					</header>
+					<sheet>
+						<div name="button_box" class="oe_button_box">
+							<button name="toggle_active" type="object" class="oe_stat_button" icon="fa-check">
+								<field name="active" options="{'terminology': 'active'}" widget="boolean_button"/>
+							</button>
+						</div>
+						<field name="connection_status" invisible="1"/>
+						<widget name="web_ribbon" text="Connected"
+							attrs="{'invisible': [('connection_status','!=', True)]}"/>
+						<widget name="web_ribbon" text="Not Connected" bg_color="bg-danger"
+							attrs="{'invisible': ['|',('connection_status','!=', False)]}"/>
+						
+						<div class="oe_title">
+							<label for="name" string="Instance name"/>
+							<h1><field name="name" placeholder="e.g. Office365 Connector Name"/></h1>
+						</div>
+                     
+						
+						<notebook>
+							<page string="Api Details" name='api_details'>
+                                <div class="row mt16 o_settings_container">
+                                     <div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Unique String" for="query_string"/>
+											<div>
+												<field name="query_string"/>
+											</div>
+										</div>
+									</div>
+									<div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Redirect url" for="redirect_url"/>
+											<div>
+												<field name="redirect_url"/>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="row mt16 o_settings_container">
+									<div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Client id" for="client_id"/>
+											<div>
+												<field name="client_id"/>
+											</div>
+										</div>
+									</div>
+                                    <div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Client Key" for="client_key"/>
+											<div>
+												<field name="client_key"/>
+											</div>
+										</div>
+									</div>
+								</div>
+                                <div class="row mt16 o_settings_container" attrs="{'invisible' : [('connection_status','=',False)]}">
+									<div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Refresh Token" for="refresh_token"/>
+											<div>
+												<field name="refresh_token"/>
+											</div>
+										</div>
+									</div>
+                                    <div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Access Token" for="access_token"/>
+											<div>
+												<field name="access_token"/>
+											</div>
+										</div>
+									</div>
+								</div>	
+							</page>
+						</notebook>
+					</sheet>
+					<footer>
+					</footer>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+		</record>
+
+		<record id="office365_mapping_tree" model="ir.ui.view">
+			<field name="name">Office365 Connection Tree</field>
+			<field name="model">office365.instance</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Quickbook Connection Mapping">
+					<field name="name"/>
+					<field name="create_date" readonly="1"/>
+					<field name="write_date" readonly="1"/>
+				</tree>
+			</field>
+		</record>
+
+
+
+		<record id="office365_connection_mapping" model="ir.actions.act_window">
+			<field name="name">Office365 Connections</field>
+			<field name="res_model">office365.instance</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="office365_mapping_tree"/>
+		</record>
+	</data>
+</odoo>
+

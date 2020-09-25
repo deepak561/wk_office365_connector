@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+,,,,,,,
+access_office365_instance_user,Office365 Instance User,model_office365_instance,group_office365_user,1,0,0,0
+
+
+,,,,,,,
+access_office365_instance_manager,Office365 Instance Manager,model_office365_instance,group_office365_manager,1,1,1,1
