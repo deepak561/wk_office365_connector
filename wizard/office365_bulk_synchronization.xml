@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+
+<odoo>
+    <record id="id_office365_bulk_synchronisation_form" model="ir.ui.view">
+            <field name="name">Office365 Bulk Synchronisation</field>
+            <field name="model">office365.bulk.synchronisation</field>
+            <field name="arch" type="xml">
+                <form string="Sync">
+                    <group col='4'>
+                        <field name="object_type" widget="selection" required="1"/>
+                        <field name='action_2' widget="selection" 
+                        attrs="{'invisible':[('action','=','import')],'readonly':[('object_type','in',['partner_category','account','order','invoice','payment','purchase_order'])]}"/>
+                        <field name='action_3' widget='selection' attrs="{'invisible':[('action','=','export')],'readonly':['|',('object_type','in',['partner_category','account','order','invoice','purchase_order']),('action','=','import')]}"/>
+                        <field name='action' invisible="1"/>
+                        <field name='limit' required='1'/>
+                    </group>
+                     <group col='2'>
+                        <field name="instance_id" widget="selection" 
+						required='1' string="Instance Id"/>
+                    </group>
+                    <footer>
+                        <button name="start_action_office365_synchronization"
+                                string="Action Now"
+                                type="object"
+                                class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class='oe_link' special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+</odoo>

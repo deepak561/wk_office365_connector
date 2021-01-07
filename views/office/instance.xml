@@ -49,6 +49,10 @@
 									</div>
 									<div class="col-xs-12 col-md-6 o_setting_box">
 										<div class="o_setting_right_pane">
+											<p class="oe_grey oe_edit_only">
+												<strong>Message</strong>: Please Add This Redirect/Authorised Url To Your Api Console So 
+												That Your Cloud Can Connect To Odoo.
+											</p>
 											<label string="Redirect url" for="redirect_url"/>
 											<div>
 												<field name="redirect_url"/>
@@ -117,8 +121,6 @@
 				</tree>
 			</field>
 		</record>
-
-
 
 		<record id="office365_connection_mapping" model="ir.actions.act_window">
 			<field name="name">Office365 Connections</field>
