@@ -119,8 +119,9 @@ class Office365Instance(models.Model):
 					refresh_token = response['refresh_token']
 				if context.get('refresh_token',True):
 					instance_obj.write({'access_token':access_token,'refresh_token':refresh_token})
+				self._cr.commit()
 		return{
-			'url':'https://graph.microsoft.com/v1.0',
+			'url':'https://graph.microsoft.com/v1.0/me/',
 			'office365':office365api,
 			'access_token':access_token,
 			'status':status,
@@ -132,7 +133,7 @@ class Office365Instance(models.Model):
 		client_id = self.client_id
 		redirect_uri = self.redirect_url
 		url = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
-		scope = 'files.readwrite offline_access'
+		scope = 'Notes.ReadWrite.All'
 		data = {
 			'client_id':client_id,
 			'scope':scope,

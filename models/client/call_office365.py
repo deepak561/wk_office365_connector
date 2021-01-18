@@ -107,7 +107,7 @@ class CallOffice365Api(models.TransientModel):
 				context['call_again'] = False
 				instance_id = context.get('instance_id',False)
 				if instance_id:
-					connection = self.env['office365.instance']._create_Office365_connection(instance_id, refresh_token =True)
+					connection = self.env['office365.instance']._create_office365_connection(instance_id, refresh_token =True)
 					access_token = connection.get('access_token',False)
 					if access_token:
 						headers.update({'Authorization': 'bearer {}'.format(access_token)})

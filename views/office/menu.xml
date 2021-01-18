@@ -23,6 +23,12 @@
                         <menuitem id="menu_office365_contact_mapping" 
                                 name="Contact" parent="wk_office365_connector.menu_office365_mapping"
                                 action="wk_office365_connector.office365_contact_mapping" sequence="10"/>
+                        <menuitem id="menu_office365_task_mapping" 
+                                name="Task" parent="wk_office365_connector.menu_office365_mapping"
+                                action="wk_office365_connector.office365_task_mapping" sequence="20"/>
+                        <menuitem id="menu_office365_calendar_mapping" 
+                                name="Calendar" parent="wk_office365_connector.menu_office365_mapping"
+                                action="wk_office365_connector.office365_calendar_mapping" sequence="30"/>
     </data>
 </odoo>
 

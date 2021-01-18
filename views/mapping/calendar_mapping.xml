@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+
+<odoo>
+    <data>
+
+        <!--========== Office 365 Calendar Mapping ===============-->
+
+        <record id="office365_calendar_form" model="ir.ui.view">
+            <field name="name">office365.calendar.mapping.form</field>
+            <field name="model">office365.calendar.mapping</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Calendar Mapping" create="false" edit="false">
+                    <group>
+                        <field name="name" readonly="1"/>
+                        <field name="odoo_id" readonly="1"/>
+                        <field name="office_id" readonly="1"/>
+                        <field name="instance_id" readonly="1"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="office365_calendar_tree" model="ir.ui.view">
+            <field name="name">office365.calendar.mapping.tree</field>
+            <field name="model">office365.calendar.mapping</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree create="false" string="Quickbook Calendar Mapping">
+                    <field name="id"/>
+                    <field name="name"/>
+                    <field name="odoo_id"/>
+                    <field name="office_id"/>
+                    <field name="instance_id" readonly="1"/>
+                    <field name='created_by' readonly='1'/>
+                    <field name="create_date" readonly="1"/>
+                    <field name="write_date" readonly="1"/>
+                    <field name='is_sync'/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Search View for Qucikbook calendars  -->
+        <record id="office365_calendar_search" model="ir.ui.view">
+            <field name="name">office365.calendar.mapping.search</field>
+            <field name="model">office365.calendar.mapping</field>
+            <field name="arch" type="xml">
+                <search string="Calendar Mapping">
+                    <field name="name" filter_domain="[('name','ilike',self)]"/>
+                    <field name="odoo_id"/>
+                    <field name="instance_id"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Instance" name="group_by_instance" context="{'group_by':'instance_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="office365_calendar_mapping" model="ir.actions.act_window">
+            <field name="name">Office 365 Calendar Mapping</field>
+            <field name="res_model">office365.calendar.mapping</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{"search_default_group_by_instance":1}</field>
+            <field name="view_id" ref="office365_calendar_tree"/>
+            <field name="search_view_id" ref = "office365_calendar_search"/>
+        </record>
+    </data>
+</odoo>

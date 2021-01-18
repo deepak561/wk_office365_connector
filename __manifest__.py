@@ -35,6 +35,7 @@ For any doubt or query email us at support@webkul.com or raise a Ticket on http:
     'views/office/instance.xml',
     'views/mapping/contact_mapping.xml',
     'views/mapping/task_mapping.xml',
+    'views/mapping/calendar_mapping.xml',
     'views/office/office365_synchronization.xml',
     'views/office/menu.xml',
     'data/connector_sequence.xml',
