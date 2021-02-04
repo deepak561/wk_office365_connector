@@ -20,7 +20,7 @@ class Office365Main(http.Controller):
 		cloud_connection = request.env['office365.instance']
 		try:
 			response = cloud_connection.search([('query_string','=',query_string)],limit =1)
-			_logger.info("======================================query_string%r",response)
+			_logger.info("======================================query_string%r",kwargs)
 			if response:
 				get  = cloud_connection._create_office365_flow(response.id, *args, **kwargs)
 			action_id = request.env.ref('wk_office365_connector.office365_connection_mapping').id

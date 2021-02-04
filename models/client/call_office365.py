@@ -64,6 +64,7 @@ class CallOffice365Api(models.TransientModel):
 		}
 		status_code = response.status_code
 		content = response.content
+		_logger.info("==============================content%r",content)
 		if status_code in (200, 201, 302, 204):
 			if ('content' in url or method.lower()=='delete') \
 				and (method.lower()=='get' or method.lower()=='delete'):

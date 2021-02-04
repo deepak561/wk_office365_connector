@@ -1,11 +1,28 @@
 from odoo import _, api, fields, models
-import logging
 import json
 import requests
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+import logging
+# import re
+
+# cleanr = re.compile('<.*?>')
 _logger = logging.getLogger(__name__)
 
+get_rule = {
+	'daily':'daily',
+	'weekly':'weekly',
+	'monthly':'absoluteMonthly',
+	'yearly':'absoluteYearly'
+}
 
-class Office365calendar(models.TransientModel):
+# def remove_html_tags(html_data):
+# 	cleantext = re.sub(cleanr, '', html_data)
+# 	return cleantext
+
+
+class Office365Calendar(models.TransientModel):
 	_inherit = 'office365.synchronization'
 
 	def export_sync_calendar(self, connection, instance_id, limit, domain = []):
@@ -20,8 +37,8 @@ class Office365calendar(models.TransientModel):
 			response = self.export_office365_calendar(connection, calendar_id, instance_id)
 			_logger.info("================================response%r",response)
 			if response.get('status'):
-				officeId = response['officeId']
-				self.create_odoo_mapping('office365.calendar.mapping', calendar_id.id, officeId, instance_id)
+				office_id = response['office_id']
+				self.create_odoo_mapping('office365.calendar.mapping', calendar_id.id, office_id, instance_id)
 				successfull_ids.append(calendar_id.id)
 			else:
 				unsuccessfull_ids.append('%s,%s'%(str(calendar_id.id),response['message']))
@@ -36,8 +53,8 @@ class Office365calendar(models.TransientModel):
 		meesage_wizard = self.env['office365.message.wizard']
 		for to_update in to_update_ids:
 			calendar_id = to_update.name
-			officeId = to_update.office_id
-			response = self.update_online_calendar(connection,calendar_id, officeId, instance_id)
+			office_id = to_update.office_id
+			response = self.update_office365_calendar(connection,calendar_id, office_id, instance_id)
 			if response.get('status'):
 				to_update.is_sync = 'no'
 				successfull_ids.append(calendar_id.id)
@@ -46,7 +63,7 @@ class Office365calendar(models.TransientModel):
 		message = 'SuccessFull calendars Updated To Office365 Are%r,UnsuccessFull calendars With Response Message Are%r'%(successfull_ids,unsuccessfull_ids)
 		return meesage_wizard.generate_message(message)
 	
-	def update_online_calendar(self,connection,calendar_id,officeId, instance_id):
+	def update_office365_calendar(self,connection,calendar_id,office_id, instance_id):
 		status = False
 		url = connection.get('url')
 		access_token = connection.get('access_token')
@@ -58,7 +75,7 @@ class Office365calendar(models.TransientModel):
 				'Accept': 'application/json',
 				'Authorization':'Bearer %s'%access_token
 			}
-			url+= 'calendars/%s'%officeId
+			url+= 'calendar/events/%s'%office_id
 			try:
 				schema = self.get_export_calendar_schema(calendar_id)
 				response = client.call_drive_api(url, 'PATCH', json.dumps(schema),headers = headers)
@@ -69,19 +86,79 @@ class Office365calendar(models.TransientModel):
 			'status':status,
 			'message':message
 		}
+	
+	def get_date(self,date):
+		date_update = datetime.combine(date, datetime.min.time())
+		return date_update.isoformat()
 			
 	def get_export_calendar_schema(self, calendar_id):
-		split_name =calendar_id.name.split(' ') 
 		schema = {
-			'emailAddresses':[{
-				'address': calendar_id.email or '',
-				'name': calendar_id.name or ''
-			}],
-			'givenName': split_name[0] if len(split_name)>1 else split_name,
-			'surname': split_name[-1] if len(split_name)>1 else split_name,
-			'businessPhones': [calendar_id.phone or '']
-
+			'subject':calendar_id.name,
+			'body': {
+				'contentType':'HTML',
+				'content': calendar_id.description or calendar_id.name
+			},
+			"location":{
+      			"displayName":calendar_id.location or ''
+  				},
+			"attendees": [
+  		],
 		}
+		for attendee_id in calendar_id.attendee_ids:
+			schema['attendees'].append({
+      				"emailAddress": {
+        					"address":attendee_id.email or '',
+        					"name": attendee_id.partner_id.name
+      				},
+      				"type": "required"
+    			})
+		if calendar_id.allday:
+			schema['isAllDay'] = True
+			if calendar_id.start_date:
+				schema['start'] = {
+					'dateTime':self.get_date(calendar_id.start_date),
+					'timeZone': self._context.get('tz','UTC')
+				}
+				if (calendar_id.stop_date- calendar_id.start_date).days>0:
+					endDatetime = self.get_date(calendar_id.stop_date)
+				else:
+					endDatetime = self.get_date(calendar_id.stop_date+timedelta(days=1))
+				schema['end'] = {
+					'dateTime': endDatetime,
+					'timeZone':self._context.get('tz','UTC')
+				}
+		else:
+			if calendar_id.start_datetime:
+				schema['start'] = {
+					'dateTime': calendar_id.start_datetime.isoformat(),
+					'timeZone': self._context.get('tz','UTC')
+				}
+				if calendar_id.duration:
+					endDatetime = calendar_id.start_datetime + timedelta(hours=calendar_id.duration)
+					schema['end'] = {
+						'dateTime': endDatetime.isoformat(),
+						'timeZone':self._context.get('tz','UTC')
+					}
+		if calendar_id.alarm_ids:
+			schema['isReminderOn'] = True
+		# if calendar_id.recurrency:
+		# 	schema['recurrency'] = {
+		# 		'pattern':{
+		# 			'type': get_rule[calendar_id.rrule_type],
+		# 			'interval': int(calendar_id.interval) * 1024
+		# 		}
+		# 	}
+		# 	if calendar_id.end_type =='count':
+		# 		schema['recurrency']['range'] = {
+		# 			'type':'numbered',
+		# 			'numberOfOccurrences':int(calendar_id.count) * 1024
+		# 		}
+		# 	else:
+		# 		schema['recurrency']['range'] = {
+		# 			'type':'noEnd',
+		# 			'numberOfOccurrences':int(calendar_id.count) * 1024,
+		# 			'startDate':calendar_id.final()
+		# 		}
 		return schema
 		
 	def export_office365_calendar(self,connection,calendar_id, instance_id):
@@ -89,7 +166,7 @@ class Office365calendar(models.TransientModel):
 		url = connection.get('url')
 		access_token = connection.get('access_token')
 		client = self.env['call.office365']
-		officeId = ''
+		office_id = ''
 		message = 'SuccessFully Exported'
 		if url and access_token:
 			headers = {
@@ -97,32 +174,32 @@ class Office365calendar(models.TransientModel):
 				'Accept': 'application/json',
 				'Authorization':'Bearer %s'%access_token
 			}
-			url+= 'calendars'
+			url+= 'calendar/events'
 			try:
 				schema = self.get_export_calendar_schema(calendar_id)
-				_logger.info("==============================schema%r",[schema])
+				_logger.info("==============================schema%r",[schema,url])
 				response = client.call_drive_api(url, 'POST', json.dumps(schema),headers = headers)
-				officeId =  response['id']
+				office_id =  response['id']
 				status = True
 			except Exception as e:
 				message = str(e)
 		return{
 			'status':status,
-			'officeId':officeId,
+			'office_id':office_id,
 			'message':message
 		}
 	
-	def check_online_specific_calendar(self, connection, calendar_id, instance_id):
+	def check_office365_specific_calendar(self, connection, calendar_id, instance_id):
 		mapping = self.env['office365.calendar.mapping']
 		domain = [('instance_id','=',instance_id),
 		('name','=',calendar_id.id)]
 		search = mapping.search(domain,limit=1)
-		officeId = False
+		office_id = False
 		if search:
-			officeId = search.officeId
+			office_id = search.office_id
 		else:
 			response = self.export_office365_calendar(connection, calendar_id, instance_id)
 			if response.get('status'):
-				officeId = response['officeId']
-				self.create_odoo_mapping('office365.calendar.mapping', calendar_id.id, officeId, instance_id)
-		return officeId
+				office_id = response['office_id']
+				self.create_odoo_mapping('office365.calendar.mapping', calendar_id.id, office_id, instance_id)
+		return office_id

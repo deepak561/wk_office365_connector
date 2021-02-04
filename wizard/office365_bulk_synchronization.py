@@ -24,9 +24,9 @@ class Office365BulkSynchronization(models.TransientModel):
 	def _get_object_type(self):
 		storage_type = [
 			('contact','Contact'),
+			('calendar','Calendar'),
+			('project','Project'),
 			('task','Task'),
-			('email','Email'),
-			('calender','Calender'),
 		]
 		return storage_type
 	

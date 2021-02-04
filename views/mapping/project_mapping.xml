@@ -6,14 +6,14 @@
 <odoo>
     <data>
 
-        <!--========== Office 365 Task Mapping ===============-->
+        <!--========== Office 365 Project Mapping ===============-->
 
-        <record id="office365_task_form" model="ir.ui.view">
-            <field name="name">office365.task.mapping.form</field>
-            <field name="model">office365.task.mapping</field>
+        <record id="office365_project_form" model="ir.ui.view">
+            <field name="name">office365.project.mapping.form</field>
+            <field name="model">office365.project.mapping</field>
             <field name="type">form</field>
             <field name="arch" type="xml">
-                <form string="Task Mapping" create="false" edit="false">
+                <form string="Project Mapping" create="false" edit="false">
                     <group>
                         <field name="name" readonly="1"/>
                         <field name="odoo_id" readonly="1"/>
@@ -24,12 +24,12 @@
             </field>
         </record>
 
-        <record id="office365_task_tree" model="ir.ui.view">
-            <field name="name">office365.task.mapping.tree</field>
-            <field name="model">office365.task.mapping</field>
+        <record id="office365_project_tree" model="ir.ui.view">
+            <field name="name">office365.project.mapping.tree</field>
+            <field name="model">office365.project.mapping</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree create="false" string="Office365 Task Mapping">
+                <tree create="false" string="Office365 Project Mapping">
                     <field name="id"/>
                     <field name="name"/>
                     <field name="odoo_id"/>
@@ -43,12 +43,12 @@
             </field>
         </record>
 
-        <!-- Search View for Qucikbook tasks  -->
-        <record id="office365_task_search" model="ir.ui.view">
-            <field name="name">office365.task.mapping.search</field>
-            <field name="model">office365.task.mapping</field>
+        <!-- Search View for Office365 Projects  -->
+        <record id="office365_project_search" model="ir.ui.view">
+            <field name="name">office365.project.mapping.search</field>
+            <field name="model">office365.project.mapping</field>
             <field name="arch" type="xml">
-                <search string="Task Mapping">
+                <search string="Project Mapping">
                     <field name="name" filter_domain="[('name','ilike',self)]"/>
                     <field name="odoo_id"/>
                     <field name="instance_id"/>
@@ -59,13 +59,13 @@
             </field>
         </record>
 
-        <record id="office365_task_mapping" model="ir.actions.act_window">
-            <field name="name">Office 365 Task Mapping</field>
-            <field name="res_model">office365.task.mapping</field>
+        <record id="office365_project_mapping" model="ir.actions.act_window">
+            <field name="name">Office 365 Project Mapping</field>
+            <field name="res_model">office365.project.mapping</field>
             <field name="view_mode">tree,form</field>
             <field name="context">{"search_default_group_by_instance":1}</field>
-            <field name="view_id" ref="office365_task_tree"/>
-            <field name="search_view_id" ref = "office365_task_search"/>
+            <field name="view_id" ref="office365_project_tree"/>
+            <field name="search_view_id" ref = "office365_project_search"/>
         </record>
     </data>
 </odoo>

@@ -12,4 +12,4 @@ class Office365CommonMapping(models.Model):
 	office_id = fields.Char('Office365 Contact Id')
 	instance_id = fields.Many2one('office365.instance')
 	created_by = fields.Char('Created By')
-	is_sync = fields.Selection([('yes','Yes'),('no','No')],'Update Required')
+	is_sync = fields.Selection([('yes','Yes'),('no','No')],'Update Required', default='no')

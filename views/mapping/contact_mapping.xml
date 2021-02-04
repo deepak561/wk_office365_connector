@@ -29,7 +29,7 @@
             <field name="model">office365.contact.mapping</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree create="false" string="Quickbook Contact Mapping">
+                <tree create="false" string="Office365 Contact Mapping">
                     <field name="id"/>
                     <field name="name"/>
                     <field name="odoo_id"/>

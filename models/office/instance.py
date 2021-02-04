@@ -49,6 +49,9 @@ class Office365Instance(models.Model):
 		string='Refresh Token'
 		)
 
+	office365_user_id = fields.Text(
+		string = 'User Id'
+	)
 
 	active = fields.Boolean(
 		string = 'Active', 
@@ -105,6 +108,7 @@ class Office365Instance(models.Model):
 			'redirect_uri':instance_obj.redirect_url,
 			'client_secret':instance_obj.client_key,
 			'refresh_token':instance_obj.refresh_token,
+			'scope':'user.read mail.read',
 			'grant_type':'refresh_token'
 			}
 			try:
@@ -127,18 +131,23 @@ class Office365Instance(models.Model):
 			'status':status,
 			'error' : error
 			}
+	
+
 
 	def test_connection(self):
 		gen_message = self.env['office365.message.wizard']
 		client_id = self.client_id
 		redirect_uri = self.redirect_url
 		url = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
-		scope = 'Notes.ReadWrite.All'
+		scope = '''offline_access user.read 
+Mail.ReadWrite.Shared Calendars.ReadWrite Contacts.ReadWrite Tasks.ReadWrite'''
 		data = {
 			'client_id':client_id,
 			'scope':scope,
 			'response_type':'code',
-			'redirect_uri':redirect_uri
+			'redirect_uri':redirect_uri,
+			'response_mode':'query',
+			'state':12345
 		}
 		res = requests.get(url,params=data)
 		if res.status_code in [200,201]:
@@ -154,6 +163,25 @@ class Office365Instance(models.Model):
 		return gen_message.generate_message(message)
 	
 
+	def get_office_user_id(self):
+		gen_message = self.env['office365.message.wizard']
+		headers = {
+				'Content-type':'application/json',
+				'Accept': 'application/json',
+				'Authorization':'Bearer %s'%self.access_token
+			}
+		url = 'https://graph.microsoft.com/v1.0/me/'
+		client = self.env['call.office365']
+		message = 'UserId Successfully Updated'
+		try:
+			response = client.call_drive_api(url, 'GET', data=None, headers = headers)
+			_logger.info("======================response=========%r",[response])
+			userId = response.get('id')
+			self.office365_user_id = userId
+		except Exception as e:
+			message = str(e)
+		return gen_message.generate_message(message)
+
 	@api.model
 	def _create_office365_flow(self,instance_id, *args, **kwargs):
 		code = kwargs.get('code','')
@@ -165,11 +193,12 @@ class Office365Instance(models.Model):
 		redirect_uri = instance_obj.redirect_url
 		error = ''
 		message = 'Access Token And Refresh Token Successfully Updated'
-		url='https://login.microsoftonline.com/common/oauth2/v2.0/token'
+		url = 'https://login.microsoftonline.com/common/oauth2/v2.0/token'
 		data = {
 			'client_id':client_id,
 			'redirect_uri':redirect_uri,
 			'client_secret':clien_secret_key,
+			'scode':'user.read mail.read',
 			'code':code,
 			'grant_type':'authorization_code'
 			}

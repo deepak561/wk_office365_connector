@@ -12,7 +12,7 @@ from odoo import fields, models
 
 class Office365MessageWizard(models.TransientModel):
 	_name = "office365.message.wizard"
-	_description = "Message Wizard For Quickbook Online View"
+	_description = "Message Wizard For Office365 View"
 	
 	text = fields.Text(string='Message', readonly=True, translate=True)
 

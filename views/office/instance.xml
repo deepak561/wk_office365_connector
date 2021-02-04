@@ -17,6 +17,12 @@
 								icon="fa-pencil-square-o" 
 								class="oe_highlight" 
 								string='Test Connection'/>
+
+								<!-- <button name="get_office_user_id"
+								type='object' 
+								class="oe_highlight" 
+								string='Get Office User Id'
+								attrs="{'invisible': [('connection_status','!=', True)]}"/> -->
 					</header>
 					<sheet>
 						<div name="button_box" class="oe_button_box">
@@ -95,6 +101,14 @@
 											</div>
 										</div>
 									</div>
+									<div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Office User Id" for="office365_user_id"/>
+											<div>
+												<field name="office365_user_id"/>
+											</div>
+										</div>
+									</div>
 								</div>	
 							</page>
 						</notebook>
@@ -114,7 +128,7 @@
 			<field name="model">office365.instance</field>
 			<field name="type">tree</field>
 			<field name="arch" type="xml">
-				<tree string="Quickbook Connection Mapping">
+				<tree string="Office365 Connection Mapping">
 					<field name="name"/>
 					<field name="create_date" readonly="1"/>
 					<field name="write_date" readonly="1"/>
