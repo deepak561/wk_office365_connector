@@ -86,6 +86,18 @@ class Office365Instance(models.Model):
 	query_string = fields.Char(
 		string = 'Url String'
 		)
+	lastImportProjectDate = fields.Char(
+		string = 'Last Import Project Date'
+	)
+	lastImportTaskDate = fields.Char(
+		string = 'Last Import Task Date'
+	)
+	lastImportCalendarDate = fields.Char(
+		string = 'Last Import Calendar Date'
+	)
+	lastImportContactDate = fields.Char(
+		string = 'Last Import Contact Date'
+	)
 
 	@api.model
 	def _create_office365_connection(self, instance_id,refresh_token = False):
@@ -129,7 +141,11 @@ class Office365Instance(models.Model):
 			'office365':office365api,
 			'access_token':access_token,
 			'status':status,
-			'error' : error
+			'error' : error,
+			'lastImportProjectDate':instance_obj.lastImportProjectDate or False,
+			'lastImportTaskDate':instance_obj.lastImportTaskDate or False,
+			'lastImportCalendarDate':instance_obj.lastImportCalendarDate or False,
+			'lastImportContactDate':instance_obj.lastImportContactDate or False
 			}
 	
 

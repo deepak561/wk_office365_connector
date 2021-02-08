@@ -5,7 +5,7 @@ import requests
 _logger = logging.getLogger(__name__)
 
 
-class Office365partner(models.TransientModel):
+class Office365Contact(models.TransientModel):
 	_inherit = 'office365.synchronization'
 
 	def export_sync_contact(self, connection, instance_id, limit, domain = []):
@@ -83,6 +83,7 @@ class Office365partner(models.TransientModel):
 			'businessPhones': [partner_id.phone or ''],
 			'jobTitle': partner_id.title or '',
 			'mobilePhone': partner_id.mobile or '',
+			'personalNotes': partner_id.comment or '',
 			'homeAddress':{
 				'city': partner_id.city or '',
 				'countryOrRegion':partner_id.country_id.name if partner_id.country_id else '',
