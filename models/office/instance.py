@@ -8,13 +8,24 @@
 ##########################################################################
 import requests
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError,Warning
 import logging
 import json
 from datetime import datetime
 import time
 from urllib.parse import urlencode, quote_plus
 _logger = logging.getLogger(__name__)
+
+limit = [('1',1),
+		('10',10),
+		('50',50),
+		('100',100),
+		('200',200),
+		('300',300),
+		('500',500),
+		('1000',1000),
+		('2000',2000),
+		]
 
 
 def _unescape(text):
@@ -34,13 +45,23 @@ class Office365Instance(models.Model):
 	_name = 'office365.instance'
 	_inherit = 'mail.thread'
 
-
+	def get_redirect_url(self):
+		config_parameter = self.env['ir.config_parameter']
+		url = config_parameter.get_param('web.base.url')
+		if not url.endswith('/'):
+			url+= '/'
+		url+= 'wk_office365_connector/'
+		return url
 
 	name = fields.Char(
 		string = 'Storage Name', 
 		required=True
 		)
-	
+	send_message = fields.Boolean(
+		string = 'Send Message',
+		default = False
+	)
+
 	access_token = fields.Text(
 		string = 'Access Token'
 		)
@@ -65,7 +86,8 @@ class Office365Instance(models.Model):
 	
 	redirect_url = fields.Char(
 		string= 'Redirect Url',
-		required = True
+		required = True,
+		default = lambda self:self.get_redirect_url()
 	)
 	
 	client_id = fields.Char(
@@ -82,10 +104,7 @@ class Office365Instance(models.Model):
 		string = "Message",
 		tracking=True
 		)
-	
-	query_string = fields.Char(
-		string = 'Url String'
-		)
+
 	lastImportProjectDate = fields.Char(
 		string = 'Last Import Project Date'
 	)
@@ -98,6 +117,35 @@ class Office365Instance(models.Model):
 	lastImportContactDate = fields.Char(
 		string = 'Last Import Contact Date'
 	)
+
+	# limit for cron 
+	importContactLimit = fields.Selection(selection = limit, default='10')
+	
+	importCalendarLimit = fields.Selection(selection = limit, default='10')
+	
+	importProjectLimit = fields.Selection(selection = limit, default='10')
+	
+	importTaskLimit = fields.Selection(selection = limit, default='10')
+
+	@api.model
+	def create(self,vals):
+		if not self._context.get('multi_instance',False) and vals.get('active',False):
+			if(self.search([('active','=',True)])):
+				raise Warning('Only One Active Connection Allowed')
+		send_message_search = self.search([('send_message','=',True)])
+		if send_message_search and len(send_message_search.ids)>1:
+			raise Warning('Only One Active Connection Can Have Send Message True')
+		return super().create(vals)
+
+	def write(self,vals):
+		if not self._context.get('multi_instance',False) and vals.get('active',False):
+			if(self.search([('active','=',True)])):
+				raise Warning('Only One Active Connection Allowed')
+		send_message_search = self.search([('send_message','=',True)])
+		if send_message_search and len(send_message_search.ids)>1:
+			raise Warning('Only One Active Connection Can Have Send Message True')
+		return super().write(vals)
+
 
 	@api.model
 	def _create_office365_connection(self, instance_id,refresh_token = False):
@@ -156,7 +204,7 @@ class Office365Instance(models.Model):
 		redirect_uri = self.redirect_url
 		url = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
 		scope = '''offline_access user.read 
-Mail.ReadWrite.Shared Calendars.ReadWrite Contacts.ReadWrite Tasks.ReadWrite'''
+Mail.ReadWrite Mail.Send Calendars.ReadWrite Contacts.ReadWrite Tasks.ReadWrite'''
 		data = {
 			'client_id':client_id,
 			'scope':scope,
@@ -237,16 +285,4 @@ Mail.ReadWrite.Shared Calendars.ReadWrite Contacts.ReadWrite Tasks.ReadWrite'''
 		return{
 			'status':status
 		}
-	
-	@api.onchange('query_string')
-	def onchange_query_string(self):
-		config_parameter = self.env['ir.config_parameter']
-		url = config_parameter.get_param('web.base.url')
-		query_string = self.query_string
-		if not url.endswith('/'):
-			url+= '/'
-		url+= 'wk_office365_connector/'
-		if query_string:
-			url+=query_string
-		self.redirect_url = url
 

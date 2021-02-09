@@ -7,12 +7,15 @@ _logger = logging.getLogger(__name__)
 class Office365Task(models.TransientModel):
 	_inherit = 'office365.synchronization'
 
-	def export_sync_project(self, connection, instance_id, limit, domain = []):
+	def export_sync_project(self, connection, instance_id, limit=False, domain = []):
 		mapping = self.env['office365.project.mapping']
 		exported_ids = mapping.search([('instance_id','=',instance_id)
 		]).mapped('name').ids
 		domain+= [('id','not in',exported_ids)]
-		to_export_ids = self.env['project.project'].search(domain,limit=limit)
+		if limit:
+			to_export_ids = self.env['project.project'].search(domain,limit=limit)
+		else:
+			to_export_ids = self.env['project.project'].search(domain)
 		successfull_ids, unsuccessfull_ids = [],[]
 		meesage_wizard = self.env['office365.message.wizard']
 		for project_id in to_export_ids:

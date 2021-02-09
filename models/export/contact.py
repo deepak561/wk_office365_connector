@@ -8,13 +8,16 @@ _logger = logging.getLogger(__name__)
 class Office365Contact(models.TransientModel):
 	_inherit = 'office365.synchronization'
 
-	def export_sync_contact(self, connection, instance_id, limit, domain = []):
+	def export_sync_contact(self, connection, instance_id, limit=False, domain = []):
 		mapping = self.env['office365.contact.mapping']
 		exported_ids = mapping.search([('instance_id','=',instance_id)
 		]).mapped('name').ids
-		domain+= [('id','not in',exported_ids),('parent_id','!=',False),
+		domain+= [('id','not in',exported_ids),('parent_id','=',False),
 		('email','not in', [False,'', ' '])]
-		to_export_ids = self.env['res.partner'].search(domain,limit=limit)
+		if limit:
+			to_export_ids = self.env['res.partner'].search(domain,limit=limit)
+		else:
+			to_export_ids = self.env['res.partner'].search(domain)
 		_logger.info("================================response%r",[to_export_ids,domain])
 		successfull_ids, unsuccessfull_ids = [],[]
 		meesage_wizard = self.env['office365.message.wizard']

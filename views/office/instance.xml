@@ -17,12 +17,6 @@
 								icon="fa-pencil-square-o" 
 								class="oe_highlight" 
 								string='Test Connection'/>
-
-								<!-- <button name="get_office_user_id"
-								type='object' 
-								class="oe_highlight" 
-								string='Get Office User Id'
-								attrs="{'invisible': [('connection_status','!=', True)]}"/> -->
 					</header>
 					<sheet>
 						<div name="button_box" class="oe_button_box">
@@ -40,19 +34,17 @@
 							<label for="name" string="Instance name"/>
 							<h1><field name="name" placeholder="e.g. Office365 Connector Name"/></h1>
 						</div>
+
+
+						<div>
+							<label for="send_message" string="Send Message"/>
+							<field name="send_message"/>
+						</div>
                      
 						
 						<notebook>
 							<page string="Api Details" name='api_details'>
                                 <div class="row mt16 o_settings_container">
-                                     <div class="col-xs-12 col-md-6 o_setting_box">
-										<div class="o_setting_right_pane">
-											<label string="Unique String" for="query_string"/>
-											<div>
-												<field name="query_string"/>
-											</div>
-										</div>
-									</div>
 									<div class="col-xs-12 col-md-6 o_setting_box">
 										<div class="o_setting_right_pane">
 											<p class="oe_grey oe_edit_only">
@@ -142,6 +134,42 @@
 											<label string="Last Import Task Date" for="lastImportTaskDate"/>
 											<div>
 												<field name="lastImportTaskDate"/>
+											</div>
+										</div>
+									</div>
+								</div>	
+							</page>
+							<page string="Cron Limit" name='cron_limit'>
+                                <div class="row mt16 o_settings_container" attrs="{'invisible' : [('connection_status','=',False)]}">
+									<div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Import Contact Limit" for="importContactLimit"/>
+											<div>
+												<field name="importContactLimit"/>
+											</div>
+										</div>
+									</div>
+                                    <div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Import Calendar Limit" for="importCalendarLimit"/>
+											<div>
+												<field name="importCalendarLimit"/>
+											</div>
+										</div>
+									</div>
+									<div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Import Proejct Limit" for="importProjectLimit"/>
+											<div>
+												<field name="importProjectLimit"/>
+											</div>
+										</div>
+									</div>
+									<div class="col-xs-12 col-md-6 o_setting_box">
+										<div class="o_setting_right_pane">
+											<label string="Import Task Limit" for="importTaskLimit"/>
+											<div>
+												<field name="importTaskLimit"/>
 											</div>
 										</div>
 									</div>

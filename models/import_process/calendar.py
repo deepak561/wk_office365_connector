@@ -26,17 +26,17 @@ class Office365calendar(models.TransientModel):
 		url = connection.get('url')
 		access_token = connection.get('access_token')
 		client = self.env['call.office365']
-		message = 'SuccessFully Imported All The calendars'
+		message = 'SuccessFully Imported All The Calendars'
 		TimeModified = ''
 		mapping = self.env['office365.calendar.mapping']
-		res_calendar = self.env['res.partner']
+		calendar_event = self.env['calendar.event']
 		try:
 			headers = {
 				'Content-type':'application/json',
 				'Accept': 'application/json',
 				'Authorization':'Bearer %s'%access_token
 			}
-			url+= 'calendars?%s&$top=%s'%(statement,limit)
+			url+= 'calendar/events?%s&$top=%s'%(statement,limit)
 			_logger.info("================url response==================%r",url)
 			response = client.call_drive_api(url, 'GET', None , headers)
 			calendars = response['value']
@@ -50,7 +50,7 @@ class Office365calendar(models.TransientModel):
 				if search:
 					search.name.write(vals)
 				else:
-					odoo_id = res_calendar.create(vals)
+					odoo_id = calendar_event.create(vals)
 					self.create_odoo_mapping('office365.calendar.mapping', odoo_id.id, calendar['id'], instance_id,{'created_by':'import'
 					})
 		except Exception as e:
@@ -90,19 +90,3 @@ class Office365calendar(models.TransientModel):
 				if title:
 					vals['title']= title.id
 		return vals
-
-	def import_get_specific_calendar(self, connection, office_id, instance_id):
-		mapping = self.env['office365.calendar.mapping']
-		domain = [('office_id','=',office_id),
-		('instance_id','=',instance_id)]
-		calendar = False
-		find = mapping.search(domain,limit=1)
-		if find:
-			calendar = find.odoo_id
-		else:
-			query = "WHERE Id='%s'"%office_id
-			self.import_get_calendar(connection,instance_id,1,query)
-			find = mapping.search(domain,limit=1)
-			if find:
-				calendar = find.odoo_id
-		return calendar

@@ -56,19 +56,3 @@ class Office365Project(models.TransientModel):
 			'name':project['displayName'],
 		}
 		return vals
-
-	def import_get_specific_project(self, connection, office_id, instance_id):
-		mapping = self.env['office365.project.mapping']
-		domain = [('office_id','=',office_id),
-		('instance_id','=',instance_id)]
-		project = False
-		find = mapping.search(domain,limit=1)
-		if find:
-			project = find.odoo_id
-		else:
-			query = "WHERE Id='%s'"%office_id
-			self.import_get_project(connection,instance_id,1,query)
-			find = mapping.search(domain,limit=1)
-			if find:
-				project = find.odoo_id
-		return project

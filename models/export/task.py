@@ -25,12 +25,16 @@ get_status = {
 class Office365Task(models.TransientModel):
 	_inherit = 'office365.synchronization'
 
-	def export_sync_task(self, connection, instance_id, limit, domain = []):
+	def export_sync_task(self, connection, instance_id, limit=False, domain = []):
 		mapping = self.env['office365.task.mapping']
 		exported_ids = mapping.search([('instance_id','=',instance_id)
 		]).mapped('name').ids
 		domain+= [('id','not in',exported_ids)]
-		to_export_ids = self.env['project.task'].search(domain,limit=limit)
+		if limit:
+			to_export_ids = self.env['project.task'].search(domain,limit=limit)
+		else:
+			to_export_ids = self.env['project.task'].search(domain)
+		_logger.info("================================response%r",to_export_ids)
 		successfull_ids, unsuccessfull_ids = [],[]
 		meesage_wizard = self.env['office365.message.wizard']
 		for task_id in to_export_ids:
@@ -127,7 +131,7 @@ class Office365Task(models.TransientModel):
 				'contentType':'html',
 				'content':task_id.description or task_id.name
 			},
-			'importance': 'high' if task_id.priority else 'low',
+			'importance': 'high' if task_id.priority=='1' else 'low',
 			'status': get_status.get(task_id.stage_id.id,'inProgress')
 		}
 		if task_id.date_last_stage_update:

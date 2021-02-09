@@ -15,11 +15,11 @@ _logger = logging.getLogger(__name__)
 
 class Office365Main(http.Controller):
 
-	@http.route('/wk_office365_connector/<string:query_string>',type='http',auth='user')
-	def wk_office365_connector(self, query_string, *args,**kwargs):
+	@http.route('/wk_office365_connector/',type='http',auth='user')
+	def wk_office365_connector(self, *args,**kwargs):
 		cloud_connection = request.env['office365.instance']
 		try:
-			response = cloud_connection.search([('query_string','=',query_string)],limit =1)
+			response = cloud_connection.search([('active','=',True)],limit =1)
 			_logger.info("======================================query_string%r",kwargs)
 			if response:
 				get  = cloud_connection._create_office365_flow(response.id, *args, **kwargs)

@@ -74,15 +74,15 @@ class Office365Contact(models.TransientModel):
 				'street': address['street']
 			})
 			if address.get('state'):
-				state = self.env['res.country.state'].search([('name','=',address['state'])],limit=1)
+				state = self.env['res.country.state'].search([('name','ilike',address['state'])],limit=1)
 				if state:
 					vals['state_id'] = state.id
 			if address.get('countryOrRegion'):
-				country_id = self.env['res.country'].search([('name','=',address['countryOrRegion'])],limit=1)
+				country_id = self.env['res.country'].search([('name','ilike',address['countryOrRegion'])],limit=1)
 				if country_id:
 					vals['country_id'] = country_id.id
 		if contact.get('jobTitle'):
-			title = self.env['res.partner.title'].search([('name','=',contact.get('jobTitle'))],limit=1)
+			title = self.env['res.partner.title'].search([('name','ilike',contact.get('jobTitle'))],limit=1)
 			if title:
 				vals['title'] = title.id
 			else:
