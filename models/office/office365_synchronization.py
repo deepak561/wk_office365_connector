@@ -18,7 +18,7 @@ class Office365Synchronization(models.TransientModel):
 	_description = 'Transient Model For office365 Synchronization'
 
 	@api.model
-	def sync_data_from_quickbook(self,operation, getLimit, action='export'):
+	def sync_data_of_office365(self,operation, getLimit, action='export'):
 		bulk_synchronization = self.env['office365.bulk.synchronisation']
 		instances = self.env['office365.instance'].search([])
 		for instance in instances:
