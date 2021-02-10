@@ -79,11 +79,13 @@ class Office365Task(models.TransientModel):
 				'Accept': 'application/json',
 				'Authorization':'Bearer %s'%access_token
 			}
-			url+= 'todo/lists/%s'%office_id
 			try:
-				schema = self.get_export_task_schema(task_id)
-				response = client.call_drive_api(url, 'PATCH', json.dumps(schema),headers = headers)
-				status = True
+				project_id = self.check_office365_specific_project(connection, task_id.project_id, instance_id)
+				if project_id:
+					url+= 'todo/lists/%s/tasks/%s'%(project_id,office_id)
+					schema = self.get_export_task_schema(task_id)
+					response = client.call_drive_api(url, 'PATCH', json.dumps(schema),headers = headers)
+					status = True
 			except Exception as e:
 				message = str(e)
 		return{

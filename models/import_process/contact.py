@@ -13,7 +13,7 @@ class Office365Contact(models.TransientModel):
 		TimeModified = connection.get('lastImportContactDate')
 		wizard_message = self.env['office365.message.wizard']
 		if TimeModified:
-			query = "$filter=lastModifiedDateTime ge %s&$orderby=lastModifiedDateTime"%TimeModified
+			query = "$filter=lastModifiedDateTime gt %s&$orderby=lastModifiedDateTime"%TimeModified
 		else:
 			query = '$orderby=lastModifiedDateTime'
 		message,TimeModified = self.import_get_contact(connection, instance_id, limit, query)
@@ -37,12 +37,10 @@ class Office365Contact(models.TransientModel):
 				'Authorization':'Bearer %s'%access_token
 			}
 			url+= 'contacts?%s&$top=%s'%(statement,limit)
-			_logger.info("================url response==================%r",url)
 			response = client.call_drive_api(url, 'GET', None , headers)
 			contacts = response['value']
 			for contact in contacts:
 				vals = self.get_import_contact_vals(contact, connection, instance_id)
-				_logger.info("================vals==================%r",vals)
 				domain = [('instance_id','=',instance_id),
 				('office_id','=',contact['id'])]
 				TimeModified = contact['lastModifiedDateTime']
@@ -90,19 +88,3 @@ class Office365Contact(models.TransientModel):
 				if title:
 					vals['title']= title.id
 		return vals
-
-	def import_get_specific_contact(self, connection, office_id, instance_id):
-		mapping = self.env['office365.contact.mapping']
-		domain = [('office_id','=',office_id),
-		('instance_id','=',instance_id)]
-		contact = False
-		find = mapping.search(domain,limit=1)
-		if find:
-			contact = find.odoo_id
-		else:
-			query = "WHERE Id='%s'"%office_id
-			self.import_get_contact(connection,instance_id,1,query)
-			find = mapping.search(domain,limit=1)
-			if find:
-				contact = find.odoo_id
-		return contact

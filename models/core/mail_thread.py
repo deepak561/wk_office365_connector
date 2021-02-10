@@ -10,11 +10,12 @@ class MailThread(models.AbstractModel):
 
 	def _message_post_after_hook(self,new_values, msg_vals):
 		self = self.sudo()
+		_logger.info("=============follower_ids============%r",[new_values,msg_vals])
 		try:
 			office_instance = self.env['office365.instance']
 			client = self.env['call.office365']
 			instance_id = office_instance.search([('send_message','=',True)],limit=1)
-			if instance_id:
+			if instance_id and msg_vals.get('message_type','notcomment')=='comment':
 				partner_ids = msg_vals.get('partner_ids',[])
 				if not partner_ids:
 					res_id = msg_vals.get('res_id')
@@ -22,7 +23,6 @@ class MailThread(models.AbstractModel):
 						partner_ids = self.env[msg_vals.get('model')].browse(res_id).message_partner_ids
 						if partner_ids:
 							partner_ids-= self.env.user.partner_id
-				_logger.info("=============follower_ids============%r",[partner_ids])
 				if partner_ids:
 					connection =  office_instance.with_context(office365='office365',
 						instance_id = instance_id.id)._create_office365_connection(instance_id.id)
@@ -37,7 +37,7 @@ class MailThread(models.AbstractModel):
 								}
 							url+= 'messages'
 							vals={
-								'subject':'Odoo Emails',
+								'subject':msg_vals.get('subject') or 'Odoo Email From %s'%msg_vals.get('email_from'),
 								'importance':'low',
 								"body":{
 									"contentType":"HTML",
@@ -73,4 +73,4 @@ class MailThread(models.AbstractModel):
 		if instance_id:
 			return False
 		else:
-			return super()._notify_thread( message, msg_vals, **kwargs)		
+			return super()._notify_thread(message, msg_vals, **kwargs)		

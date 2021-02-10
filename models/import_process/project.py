@@ -31,12 +31,10 @@ class Office365Project(models.TransientModel):
 			}
 			if not query:
 				url+= 'todo/lists?$top=%s'%limit
-			_logger.info("================url response==================%r",url)
 			response = client.call_drive_api(url, 'GET', None , headers)
 			projects = response['value']
 			for project in projects:
 				vals = self.get_import_project_vals(project, connection, instance_id)
-				_logger.info("================vals==================%r",vals)
 				domain = [('instance_id','=',instance_id),
 				('office_id','=',project['id'])]
 				search = mapping.search(domain,limit=1)

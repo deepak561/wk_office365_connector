@@ -23,7 +23,7 @@ class Office365Task(models.TransientModel):
 		TimeModified = connection.get('lastImportTaskDate')
 		wizard_message = self.env['office365.message.wizard']
 		if TimeModified:
-			query = "$filter=lastModifiedDateTime ge %s&$orderby=lastModifiedDateTime"%TimeModified
+			query = "$filter=lastModifiedDateTime gt %s&$orderby=lastModifiedDateTime"%TimeModified
 		else:
 			query = '$orderby=lastModifiedDateTime'
 		message = self.import_get_task(connection, instance_id, limit, query)
@@ -41,8 +41,6 @@ class Office365Task(models.TransientModel):
 		projects = self.env['office365.project.mapping'].search([('instance_id','=',instance_id)])
 		if not projects:
 			return 'Please Import Project First'
-		else:
-			limit = math.ceil(int(limit)/len(projects.ids))
 		try:
 			headers = {
 				'Content-type':'application/json',
@@ -51,6 +49,7 @@ class Office365Task(models.TransientModel):
 			}
 			for project in projects:
 				get_url = url + 'todo/lists/%s/tasks?%s&$top=%s'%(project.office_id,statement,limit)
+				_logger.info("=============get_url====================%r",get_url)
 				response = client.call_drive_api(get_url, 'GET', None , headers)
 				tasks = response['value']
 				for task in tasks:
@@ -67,7 +66,7 @@ class Office365Task(models.TransientModel):
 						self.create_odoo_mapping('office365.task.mapping', odoo_id.id, task['id'], instance_id,{'created_by':'import'
 						})
 				if TimeModified:
-					self.env['office365.instance'].browse(instance_id).lastImporttaskDate = TimeModified
+					self.env['office365.instance'].browse(instance_id).lastImportTaskDate = TimeModified
 		except Exception as e:
 			message = 'Message:%s'%str(e)
 		return message

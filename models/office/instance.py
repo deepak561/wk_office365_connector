@@ -104,10 +104,7 @@ class Office365Instance(models.Model):
 		string = "Message",
 		tracking=True
 		)
-
-	lastImportProjectDate = fields.Char(
-		string = 'Last Import Project Date'
-	)
+		
 	lastImportTaskDate = fields.Char(
 		string = 'Last Import Task Date'
 	)
@@ -190,7 +187,6 @@ class Office365Instance(models.Model):
 			'access_token':access_token,
 			'status':status,
 			'error' : error,
-			'lastImportProjectDate':instance_obj.lastImportProjectDate or False,
 			'lastImportTaskDate':instance_obj.lastImportTaskDate or False,
 			'lastImportCalendarDate':instance_obj.lastImportCalendarDate or False,
 			'lastImportContactDate':instance_obj.lastImportContactDate or False

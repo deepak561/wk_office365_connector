@@ -2,7 +2,7 @@ from odoo import _, api, fields, models
 import logging
 import json
 import requests
-import datetime
+from datetime import datetime
 _logger = logging.getLogger(__name__)
 
 class Office365calendar(models.TransientModel):
@@ -13,7 +13,7 @@ class Office365calendar(models.TransientModel):
 		TimeModified = connection.get('lastImportCalendarDate')
 		wizard_message = self.env['office365.message.wizard']
 		if TimeModified:
-			query = "$filter=lastModifiedDateTime ge %s&$orderby=lastModifiedDateTime"%TimeModified
+			query = "$filter=lastModifiedDateTime gt %s&$orderby=lastModifiedDateTime"%TimeModified
 		else:
 			query = '$orderby=lastModifiedDateTime'
 		message,TimeModified = self.import_get_calendar(connection, instance_id, limit, query)
@@ -37,7 +37,6 @@ class Office365calendar(models.TransientModel):
 				'Authorization':'Bearer %s'%access_token
 			}
 			url+= 'calendar/events?%s&$top=%s'%(statement,limit)
-			_logger.info("================url response==================%r",url)
 			response = client.call_drive_api(url, 'GET', None , headers)
 			calendars = response['value']
 			for calendar in calendars:
@@ -60,33 +59,47 @@ class Office365calendar(models.TransientModel):
 
 	def get_import_calendar_vals(self, calendar, connection, instance_id):
 		vals = {
-			'name':calendar['displayName'],
-			'phone': calendar['businessPhones'][0] if calendar['businessPhones'] else False,
-			'mobile': calendar['mobilePhone'],
-			'email':calendar['emailAddresses'][0]['address'] if calendar['emailAddresses'] else '',
-			'comment': calendar['personalNotes'] or '',
+			'name':calendar['subject'],
+			'description': calendar['body']['content'] if calendar['body'] else '',
+			'location': calendar['location']['displayName'] if calendar.get('location') else '',
+			'allday': calendar['isAllDay']
 		}
-		address = calendar['homeAddress']
-		if address:
-			vals.update({
-				'city': address['city'],
-				'zip': address['postalCode'],
-				'street': address['street']
-			})
-			if address.get('state'):
-				state = self.env['res.country.state'].search([('name','=',address['state'])],limit=1)
-				if state:
-					vals['state_id'] = state.id
-			if address.get('countryOrRegion'):
-				country_id = self.env['res.country'].search([('name','=',address['countryOrRegion'])],limit=1)
-				if country_id:
-					vals['country_id'] = country_id.id
-		if calendar.get('jobTitle'):
-			title = self.env['res.partner.title'].search([('name','=',calendar.get('jobTitle'))],limit=1)
-			if title:
-				vals['title'] = title.id
-			else:
-				title = self.env['res.partner.title'].create({'name':calendar.get('jobTitle')})
-				if title:
-					vals['title']= title.id
+		if calendar['isAllDay']:
+			if calendar['start']:
+				startDate = calendar['start']['dateTime'].split('.')[0]
+				startDate = datetime.strptime(startDate,"%Y-%m-%dT%H:%M:%S")
+				vals['start'] = startDate
+			if calendar['end']:
+				endDate = calendar['start']['dateTime'].split('.')[0]
+				endDate = datetime.strptime(endDate,"%Y-%m-%dT%H:%M:%S")
+				vals['stop'] = endDate
+		else:
+			if calendar['start']:
+				startDate = calendar['start']['dateTime'].split('.')[0] 
+				vals['start'] = datetime.strptime(startDate,"%Y-%m-%dT%H:%M:%S")
+				endDate = calendar['end']['dateTime'].split('.')[0]
+				endDateTime = datetime.strptime(endDate,"%Y-%m-%dT%H:%M:%S")
+				vals['stop'] = endDateTime
+		attendee_ids = []
+		for attendy in calendar.get('attendees',[]):
+			partner_id = self.search_partner_by_mail(attendy)
+			if partner_id:
+				attendee_ids.append(partner_id.id)
+		vals['partner_ids']= [(6,0,attendee_ids)]
 		return vals
+	
+
+	def search_partner_by_mail(self,attendy):
+		res_partner = self.env['res.partner']
+		email =  attendy.get('emailAddress',{}).get('address')
+		name =  attendy.get('emailAddress',{}).get('name')
+		partner_id = False
+		if email and name:
+			partner_id = res_partner.search([('email','=',email),('name','=',name)],limit=1)
+			if not partner_id:
+				partner_id = res_partner.create({
+					'email':email,
+					'name':name,
+					'customer_rank':1
+				})
+		return partner_id

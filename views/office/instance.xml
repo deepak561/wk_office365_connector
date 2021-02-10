@@ -36,7 +36,7 @@
 						</div>
 
 
-						<div>
+						<div attrs="{'invisible' : [('connection_status','=',False)]}">
 							<label for="send_message" string="Send Message"/>
 							<field name="send_message"/>
 						</div>
@@ -103,8 +103,8 @@
 									</div>
 								</div>	
 							</page>
-							<page string="Last Import Date" name='last_import_date'>
-                                <div class="row mt16 o_settings_container" attrs="{'invisible' : [('connection_status','=',False)]}">
+							<page string="Last Import Date" name='last_import_date' attrs="{'invisible' : [('connection_status','=',False)]}">
+                                <div class="row mt16 o_settings_container">
 									<div class="col-xs-12 col-md-6 o_setting_box">
 										<div class="o_setting_right_pane">
 											<label string="Last Import Contact Date" for="lastImportContactDate"/>
@@ -123,14 +123,6 @@
 									</div>
 									<div class="col-xs-12 col-md-6 o_setting_box">
 										<div class="o_setting_right_pane">
-											<label string="Last Import Proejct Date" for="lastImportProjectDate"/>
-											<div>
-												<field name="lastImportProjectDate"/>
-											</div>
-										</div>
-									</div>
-									<div class="col-xs-12 col-md-6 o_setting_box">
-										<div class="o_setting_right_pane">
 											<label string="Last Import Task Date" for="lastImportTaskDate"/>
 											<div>
 												<field name="lastImportTaskDate"/>
@@ -139,8 +131,8 @@
 									</div>
 								</div>	
 							</page>
-							<page string="Cron Limit" name='cron_limit'>
-                                <div class="row mt16 o_settings_container" attrs="{'invisible' : [('connection_status','=',False)]}">
+							<page string="Cron Limit" name='cron_limit' attrs="{'invisible' : [('connection_status','=',False)]}">
+                                <div class="row mt16 o_settings_container">
 									<div class="col-xs-12 col-md-6 o_setting_box">
 										<div class="o_setting_right_pane">
 											<label string="Import Contact Limit" for="importContactLimit"/>

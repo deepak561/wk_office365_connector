@@ -38,7 +38,6 @@ class Office365Calendar(models.TransientModel):
 		meesage_wizard = self.env['office365.message.wizard']
 		for calendar_id in to_export_ids:
 			response = self.export_office365_calendar(connection, calendar_id, instance_id)
-			_logger.info("================================response%r",response)
 			if response.get('status'):
 				office_id = response['office_id']
 				self.create_odoo_mapping('office365.calendar.mapping', calendar_id.id, office_id, instance_id)
@@ -107,11 +106,11 @@ class Office365Calendar(models.TransientModel):
 			"attendees": [
   		],
 		}
-		for attendee_id in calendar_id.attendee_ids:
+		for partner_id in calendar_id.partner_ids:
 			schema['attendees'].append({
       				"emailAddress": {
-        					"address":attendee_id.email or '',
-        					"name": attendee_id.partner_id.name
+        					"address":partner_id.email or '',
+        					"name": partner_id.name
       				},
       				"type": "required"
     			})
@@ -144,24 +143,6 @@ class Office365Calendar(models.TransientModel):
 					}
 		if calendar_id.alarm_ids:
 			schema['isReminderOn'] = True
-		# if calendar_id.recurrency:
-		# 	schema['recurrency'] = {
-		# 		'pattern':{
-		# 			'type': get_rule[calendar_id.rrule_type],
-		# 			'interval': int(calendar_id.interval) * 1024
-		# 		}
-		# 	}
-		# 	if calendar_id.end_type =='count':
-		# 		schema['recurrency']['range'] = {
-		# 			'type':'numbered',
-		# 			'numberOfOccurrences':int(calendar_id.count) * 1024
-		# 		}
-		# 	else:
-		# 		schema['recurrency']['range'] = {
-		# 			'type':'noEnd',
-		# 			'numberOfOccurrences':int(calendar_id.count) * 1024,
-		# 			'startDate':calendar_id.final()
-		# 		}
 		return schema
 		
 	def export_office365_calendar(self,connection,calendar_id, instance_id):
@@ -180,7 +161,6 @@ class Office365Calendar(models.TransientModel):
 			url+= 'calendar/events'
 			try:
 				schema = self.get_export_calendar_schema(calendar_id)
-				_logger.info("==============================schema%r",[schema,url])
 				response = client.call_drive_api(url, 'POST', json.dumps(schema),headers = headers)
 				office_id =  response['id']
 				status = True
