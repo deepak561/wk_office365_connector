@@ -10,9 +10,15 @@
         <menuitem   id="office365_parent_menu" 
                     name="Office365 Connector" groups="wk_office365_connector.group_office365_manager"
 					web_icon="wk_office365_connector,static/description/banner.png"/>					
-                <menuitem id="menu_office365_synchronization" 
+                <menuitem
+			name="Office365 Online Dashboard"
+			id="menu_office365_dashboard"
+			parent="office365_parent_menu"
+			action="action_office365_dashboard"
+			sequence="1"/>
+                <!-- <menuitem id="menu_office365_synchronization" 
                         name="Synchronization" parent="wk_office365_connector.office365_parent_menu" 
-                        sequence="1" action="wk_office365_connector.office365_synchronization_action"/>
+                        sequence="1" action="wk_office365_connector.office365_synchronization_action"/> -->
                 <menuitem id="menu_office365_parent_instance" 
                         name="Office365 Instance" parent="wk_office365_connector.office365_parent_menu" sequence="10"/>
                         <menuitem id="menu_office365_instance" 

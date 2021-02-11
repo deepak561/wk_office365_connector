@@ -21,13 +21,13 @@ class Office365RestApiError(Exception):
 	def __str__(self):
 		message=''
 		if self.error_code==401:
-			message='Code 401- Invalid Sky Drive Oauth2 Information'
+			message='Code 401- Invalid Office365 Oauth2 Information'
 		message=message+repr(self.so_error_message)
 		return message
 
 class Office365ResyncError(Office365RestApiError):
 	'''
 		Generic Office365ResyncError error class
-		This Class Inherits SkyDriveRestApiError Class And Will Use When Access Token Will Expire
+		This Class Inherits Office365ResyncError Class And Will Use When Access Token Will Expire
 	'''
 	pass

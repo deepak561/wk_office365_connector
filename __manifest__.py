@@ -15,7 +15,7 @@
 #################################################################################
 {
   "name"                 :  "Wk Office365 Connector",
-  "summary"              :  """Bi-directional synchronization of calenders,contacts,tasks with Office365""",
+  "summary"              :  """Bi-directional synchronization of calenders,contacts,tasks,projects with Office365""",
   "category"             :  "cloud",
   "version"              :  "1.1.2",
   "sequence"             :  1,
@@ -24,11 +24,12 @@
   "description"          :  """Wk Office365 Connector
 ==============================
 This module establish integration between your Odoo and office365  and allows bi-directional synchronization
- of calenders, contacts, tasks.
+ of calenders, contacts, tasks and projects.
 
 
 For any doubt or query email us at support@webkul.com or raise a Ticket on http://webkul.com/ticket/""",
-  "depends"              :  ['crm'],
+  "depends"              :  ['crm',
+  'project'],
   "data"                 :  [
     'security/office365_security.xml',
     'security/ir.model.access.csv',
@@ -37,6 +38,7 @@ For any doubt or query email us at support@webkul.com or raise a Ticket on http:
     'views/mapping/calendar_mapping.xml',
     'views/mapping/task_mapping.xml',
     'views/mapping/project_mapping.xml',
+    'views/office/dashboard.xml',
     'views/office/office365_synchronization.xml',
     'views/office/menu.xml',
     'wizard/office365_message.xml',
@@ -44,6 +46,9 @@ For any doubt or query email us at support@webkul.com or raise a Ticket on http:
     'wizard/office365_manual_synchronization.xml',
     'data/cron.xml',
     'data/server.xml'],
+  'qweb':[
+		'static/src/xml/office365_dashboard.xml'
+	],
   "images"               :  ['static/description/banner.png'],
   "application"          :  True,
   "installable"          :  True,
