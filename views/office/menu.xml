@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+
+<odoo>
+    <data>
+
+        <!--     Office Menu      -->
+        <menuitem   id="office365_parent_menu" 
+                    name="Office365 Connector" groups="wk_office365_connector.group_office365_manager"
+					web_icon="wk_office365_connector,static/description/banner.png"/>					
+                <menuitem
+			name="Office365 Online Dashboard"
+			id="menu_office365_dashboard"
+			parent="office365_parent_menu"
+			action="action_office365_dashboard"
+			sequence="1"/>
+                <!-- <menuitem id="menu_office365_synchronization" 
+                        name="Synchronization" parent="wk_office365_connector.office365_parent_menu" 
+                        sequence="1" action="wk_office365_connector.office365_synchronization_action"/> -->
+                <menuitem id="menu_office365_parent_instance" 
+                        name="Office365 Instance" parent="wk_office365_connector.office365_parent_menu" sequence="10"/>
+                        <menuitem id="menu_office365_instance" 
+                                name="Instance" parent="wk_office365_connector.menu_office365_parent_instance"
+                                action="wk_office365_connector.office365_connection_mapping" sequence="10"/>
+                <menuitem id="menu_office365_mapping" 
+                        name="Mappings" parent="wk_office365_connector.office365_parent_menu" sequence="10"/>
+                        <menuitem id="menu_office365_contact_mapping" 
+                                name="Contact" parent="wk_office365_connector.menu_office365_mapping"
+                                action="wk_office365_connector.office365_contact_mapping" sequence="10"/>
+                        <menuitem id="menu_office365_calendar_mapping" 
+                                name="Calendar" parent="wk_office365_connector.menu_office365_mapping"
+                                action="wk_office365_connector.office365_calendar_mapping" sequence="20"/>
+                        <menuitem id="menu_office365_project_mapping" 
+                                name="Project" parent="wk_office365_connector.menu_office365_mapping"
+                                action="wk_office365_connector.office365_project_mapping" sequence="30"/>
+                        <menuitem id="menu_office365_task_mapping" 
+                                name="Task" parent="wk_office365_connector.menu_office365_mapping"
+                                action="wk_office365_connector.office365_task_mapping" sequence="40"/>
+    </data>
+</odoo>
+

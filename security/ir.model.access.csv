@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+,,,,,,,
+access_office365_instance_user,Office365 Instance User,model_office365_instance,group_office365_user,1,1,1,0
+access_office365_common_mapping_user,Office365 Common Mapping User,model_office365_common_mapping,group_office365_user,1,1,1,0
+access_office365_office365_contact_mapping_user,Office365 Contact Mapping User,model_office365_contact_mapping,group_office365_user,1,1,1,0
+access_office365_office365_task_mapping_user,Office365 Task Mapping User,model_office365_task_mapping,group_office365_user,1,1,1,0
+access_office365_office365_calendar_mapping_user,Office365 Calendar Mapping User,model_office365_calendar_mapping,group_office365_user,1,1,1,0
+access_office365_office365_project_mapping_user,Office365 Project Mapping User,model_office365_project_mapping,group_office365_user,1,1,1,0
+
+
+,,,,,,,
+access_office365_instance_manager,Office365 Instance Manager,model_office365_instance,group_office365_manager,1,1,1,1
+access_office365_common_mapping_manager,Office365 Common Mapping Manager,model_office365_common_mapping,group_office365_manager,1,1,1,1
+access_office365_office365_contact_mapping_manager,Office365 office365 contact mapping Manager,model_office365_contact_mapping,group_office365_manager,1,1,1,1
+access_office365_office365_task_mapping_manager,Office365 office365 Task mapping Manager,model_office365_task_mapping,group_office365_manager,1,1,1,1
+access_office365_office365_calendar_mapping_manager,Office365 office365 Calendar mapping Manager,model_office365_calendar_mapping,group_office365_manager,1,1,1,1
+access_office365_office365_project_mapping_manager,Office365 office365 Project mapping Manager,model_office365_project_mapping,group_office365_manager,1,1,1,1
