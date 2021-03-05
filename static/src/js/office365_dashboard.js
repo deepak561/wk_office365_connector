@@ -49,9 +49,10 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 				return self.fetch_instance_extra_details()
             }).then(function(){
                 return self.get_dashboard_line_data()
+            // })
+            }).then(function(){
+				return self.fetch_task_doughnut_data()
             })
-            // }).then(function(){
-			// 	return self.fetch_purchase_doughnut_data()
             // }).then(function(){
 			// 	return self.fetch_sales_doughnut_data()
             // })
@@ -88,17 +89,18 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             // this.render_sale_graph()
             // this.render_purchase_graph()
         },
-        // fetch_purchase_doughnut_data () {
-		// 	let self = this
-		// 	return this._rpc({
-		// 		route: '/wk_office365_connector/fetch_purchase_doughnut_data',
-		// 		params: {'instance_id':self.instance_id}
-		// 	}).then(function (result) {
-		// 		self.purchase_data = result.purchase_data
-		// 		self.purchase_statuses = result.purchase_statuses
-		// 		self.purchase_colors = result.color
-		// 	})
-        // },
+        fetch_task_doughnut_data () {
+			let self = this
+			return this._rpc({
+				route: '/wk_office365_connector/fetch_task_doughnut_data',
+				params: {'instance_id':self.instance_id}
+			}).then(function (result) {
+                console.log("fetch_task_doughnut_data: ",result)
+				// self.purchase_data = result.purchase_data
+				// self.purchase_statuses = result.purchase_statuses
+				// self.purchase_colors = result.color
+			})
+        },
         // fetch_sales_doughnut_data () {
 		// 	let self = this
 		// 	return this._rpc({
@@ -157,8 +159,8 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
         // },
         // render_purchase_graph () {
 		// 	let self = this;
-		// 	$('#office365_purchase_order').replaceWith($('<canvas/>',{id:'office365_purchase_order'}))
-		// 	self.chart = new Chart('office365_purchase_order',{
+		// 	$('#office365_task').replaceWith($('<canvas/>',{id:'office365_task'}))
+		// 	self.chart = new Chart('office365_task',{
         //         type: 'doughnut',
 		// 		data: {
 		// 			labels: self.purchase_statuses,
