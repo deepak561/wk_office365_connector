@@ -58,7 +58,7 @@
                     }
                 }
                 .wizard_operation{
-                    background: #00b7ff;
+                    background: #109CF1;
                     border-radius: 4px;
                 }
                 .buttons {
@@ -92,4 +92,44 @@
         max-height: 110px;
         min-height: 108px;
     }
+
+    .container_cal {
+        width: 100%;
+        height: 100vh;
+        background-color: #eee;
+        color: #eee;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .calendar {
+        width: 45rem;
+        height: 52rem;
+        background-color: #222227;
+        box-shadow: 0 0.5rem 3rem rgba(0, 0, 0, 0.4);
+    }
+    
+    .month {
+        width: 5%;
+        height: 50px;
+        background-color: #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .month i {
+        font-size: 20px;
+        cursor: pointer;
+    }
+    
+    .month h6 {
+        font-size: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.2rem;
+        margin-bottom: 0.1rem;
+    }
+      
 }
