@@ -17,6 +17,9 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
         }
     });
 
+    var date = new Date();
+    console.log("Date",date)
+
 	let office365Dashboard = AbstractAction.extend({
 		template: 'office365_dashboard',
 		jsLibs: [
@@ -50,12 +53,15 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             }).then(function(){
                 return self.get_dashboard_line_data()
             // })
-            }).then(function(){
-				return self.fetch_task_doughnut_data()
-            })
+            // }).then(function(){
+			// 	return self.fetch_task_doughnut_data()
+            // })
             // }).then(function(){
 			// 	return self.fetch_sales_doughnut_data()
             // })
+            }).then(function(){
+                self.calendar_data()
+            })
         },
         open_instance_setting(ev){
             var self = this;
@@ -73,6 +79,62 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 				[[false,'list'],[false,'form']]);
 			
 		},
+
+        calendar_data(ev){
+            let self = this;
+            var lastDay = new Date(
+                date.getFullYear(),
+                date.getMonth() + 1,
+                0
+            ).getDate();
+            console.log("lastDay",lastDay)
+            var prevLastDay = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                0
+              ).getDate();
+              console.log("prevLastDay",prevLastDay)
+            
+              var firstDayIndex = date.getDay();
+              console.log("firstDayIndex",firstDayIndex)
+            
+            
+              var months = [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+              ];
+            $(".month p").html(months[date.getMonth()]);
+
+            // var days = self.$el.find('#day')
+            var days = $("#day")
+
+            for (var x = 0; x < firstDayIndex; x++) {
+                days.append("<div>"+" &emsp; "+"</div>");
+            }
+
+            for (var i = 1; i <= lastDay; i++) {
+                if (
+                i === new Date().getDate() &&
+                date.getMonth() === new Date().getMonth()
+                ) {
+                    days.append("<div class='today'>"+i+"</div>");
+                } else {
+                    days.append("<div>"+i+"</div>");
+                }
+            }
+			
+		},
+
         change_current_instance(){
             var self = this
             var selected_instance = $('#change_instance option:selected').val()
