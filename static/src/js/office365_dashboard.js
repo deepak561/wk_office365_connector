@@ -23,7 +23,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 	let office365Dashboard = AbstractAction.extend({
 		template: 'office365_dashboard',
 		jsLibs: [
-			'/web/static/lib/Chart/Chart.js',
+			// '/web/static/lib/Chart/Chart.js',
         ],
         events: {
             'click .open_instance_form':'open_instance_form',
@@ -48,19 +48,40 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 				return self.fetch_instance_id()
 			}).then(function(){
 				return self.fetch_instance_details()
-            }).then(function(){
-				return self.fetch_instance_extra_details()
-            }).then(function(){
-                return self.get_dashboard_line_data()
-            // })
+            // }).then(function(){
+			// 	return self.fetch_instance_extra_details()
+            // }).then(function(){
+            //     return self.get_dashboard_line_data()
+            })
             // }).then(function(){
 			// 	return self.fetch_task_doughnut_data()
             // })
             // }).then(function(){
 			// 	return self.fetch_sales_doughnut_data()
             // })
-            }).then(function(){
+            // }).then(function(){
+            //     return self.calendar_data()
+            // })
+        },
+        start: function(){
+            var self = this;
+            this._super().then(function () {
                 self.calendar_data()
+                var prev = self.$el.find('.prev')
+                var next = self.$el.find('.next')
+                var days = self.$el.find('#day')
+                prev.on('click',function(){
+                    console.log("Clicked")
+                    days.empty();
+                    date.setMonth(date.getMonth() - 1);
+                    self.calendar_data()
+                })
+                next.on('click',function(){
+                    console.log("Clicked")
+                    days.empty();
+                    date.setMonth(date.getMonth() + 1);
+                    self.calendar_data()
+                })
             })
         },
         open_instance_setting(ev){
@@ -80,14 +101,19 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 			
 		},
 
-        calendar_data(ev){
+        calendar_data: function(){
             let self = this;
+            console.log("self.el",self.el)
+            console.log(self.$el)
+            console.log(self)
+            console.log(this)
             var lastDay = new Date(
                 date.getFullYear(),
                 date.getMonth() + 1,
                 0
             ).getDate();
             console.log("lastDay",lastDay)
+            console.log("self",self)
             var prevLastDay = new Date(
                 date.getFullYear(),
                 date.getMonth(),
@@ -95,9 +121,8 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
               ).getDate();
               console.log("prevLastDay",prevLastDay)
             
-              var firstDayIndex = date.getDay();
+              var firstDayIndex = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
               console.log("firstDayIndex",firstDayIndex)
-            
             
               var months = [
                 "January",
@@ -113,10 +138,10 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
                 "November",
                 "December",
               ];
-            $(".month p").html(months[date.getMonth()]);
-
-            // var days = self.$el.find('#day')
-            var days = $("#day")
+            var month_name = self.$el.find('#month_name')
+            month_name.html(months[date.getMonth()])
+            var days = self.$el.find('#day')
+            console.log("days",days)
 
             for (var x = 0; x < firstDayIndex; x++) {
                 days.append("<div>"+" &emsp; "+"</div>");
@@ -135,6 +160,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 			
 		},
 
+
         change_current_instance(){
             var self = this
             var selected_instance = $('#change_instance option:selected').val()
@@ -147,7 +173,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 			})
         },
         on_attach_callback () {
-            this.render_line_graph()
+            // this.render_line_graph()
             // this.render_sale_graph()
             // this.render_purchase_graph()
         },
@@ -264,84 +290,84 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 		// 		},
 		// 	});
 		// },
-        change_line_graph(ev){
-            var self = this;
-            var id = ev.currentTarget.id;
-            if(id=='contact'){
-                if(self.contact==false){
-                    self.contact=true;
-                    $(ev.currentTarget).css('textDecoration','none');
-                }else{
-                    self.contact=false;
-                    $(ev.currentTarget).css('textDecoration','line-through');
-                }
-            }else{
-                if(self.calendar==false){
-                    self.calendar=true;
-                    $(ev.currentTarget).css('textDecoration','none');
-                }else{
-                    self.calendar=false;
-                    $(ev.currentTarget).css('textDecoration','line-through');
-                }
-            }
-            return $.when().then(function(){
-                return self.reload_line_graph()
-            })
-        },
-        reload_line_graph () {
-			var self = this
-            var selected_option = $('#line_obj_change option:selected').val()
-            if(selected_option=='zero')
-                selected_option = false;
-            return $.when().then(function(){
-                return self.get_dashboard_line_data(selected_option)
-            }).then(function(){
-                return self.render_line_graph()
-            })
-        },
-        render_line_graph () {
-			$('#line_chart').replaceWith($('<canvas/>',{id: 'line_chart'}))
-            var self = this
-            var data = self.line_data;
-            var options= {
-                maintainAspectfirefoxRatio: false,
-                legend: {
-                    display: false,
-                },
-                scales: {
-                    xAxes: [{
-                        gridLines: {
-                            display: false,
-                        },
-                    }],
-                    yAxes: [{
-                        gridLines: {
-                            display: false,
-                        },
-                        ticks: {
-                            precision: 0,
-                        },
-                    }],
-                },
-        };
-        var myBarChart = new Chart('line_chart', {
-        type: 'line',
-        data: data,
-        options: options
-        }); 
-		},
-        get_dashboard_line_data(month=false){
-            let self = this;
-			return this._rpc({
-				route:'/wk_office365_connector/get_dashboard_line_data',
-                params:{'instance_id':self.instance_id,
-            'month':month,
-            'contact':self.contact,
-            'calendar':self.calendar}
-			}).then(function(result){
-                self.line_data = result.data
-            });
-        },
+        // change_line_graph(ev){
+        //     var self = this;
+        //     var id = ev.currentTarget.id;
+        //     if(id=='contact'){
+        //         if(self.contact==false){
+        //             self.contact=true;
+        //             $(ev.currentTarget).css('textDecoration','none');
+        //         }else{
+        //             self.contact=false;
+        //             $(ev.currentTarget).css('textDecoration','line-through');
+        //         }
+        //     }else{
+        //         if(self.calendar==false){
+        //             self.calendar=true;
+        //             $(ev.currentTarget).css('textDecoration','none');
+        //         }else{
+        //             self.calendar=false;
+        //             $(ev.currentTarget).css('textDecoration','line-through');
+        //         }
+        //     }
+        //     return $.when().then(function(){
+        //         return self.reload_line_graph()
+        //     })
+        // },
+        // reload_line_graph () {
+		// 	var self = this
+        //     var selected_option = $('#line_obj_change option:selected').val()
+        //     if(selected_option=='zero')
+        //         selected_option = false;
+        //     return $.when().then(function(){
+        //         return self.get_dashboard_line_data(selected_option)
+        //     }).then(function(){
+        //         return self.render_line_graph()
+        //     })
+        // },
+        // render_line_graph () {
+		// 	$('#line_chart').replaceWith($('<canvas/>',{id: 'line_chart'}))
+        //     var self = this
+        //     var data = self.line_data;
+        //     var options= {
+        //         maintainAspectfirefoxRatio: false,
+        //         legend: {
+        //             display: false,
+        //         },
+        //         scales: {
+        //             xAxes: [{
+        //                 gridLines: {
+        //                     display: false,
+        //                 },
+        //             }],
+        //             yAxes: [{
+        //                 gridLines: {
+        //                     display: false,
+        //                 },
+        //                 ticks: {
+        //                     precision: 0,
+        //                 },
+        //             }],
+        //         },
+        // };
+        // var myBarChart = new Chart('line_chart', {
+        // type: 'line',
+        // data: data,
+        // options: options
+        // }); 
+		// },
+        // get_dashboard_line_data(month=false){
+        //     let self = this;
+		// 	return this._rpc({
+		// 		route:'/wk_office365_connector/get_dashboard_line_data',
+        //         params:{'instance_id':self.instance_id,
+        //     'month':month,
+        //     'contact':self.contact,
+        //     'calendar':self.calendar}
+		// 	}).then(function(result){
+        //         self.line_data = result.data
+        //     });
+        // },
         open_wizard_import(ev){
             let self = this;
 			return this._rpc({
