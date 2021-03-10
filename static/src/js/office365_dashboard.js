@@ -49,7 +49,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 			}).then(function(){
 				return self.fetch_instance_details()
             // }).then(function(){
-			// 	return self.fetch_instance_extra_details()
+			// 	return self.fetch_calendar_events_details()
             // }).then(function(){
             //     return self.get_dashboard_line_data()
             })
@@ -67,6 +67,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             var self = this;
             this._super().then(function () {
                 self.calendar_data()
+                self.fetch_calendar_events_details()
                 var prev = self.$el.find('.prev')
                 var next = self.$el.find('.next')
                 var days = self.$el.find('#day')
@@ -144,7 +145,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             console.log("days",days)
 
             for (var x = 0; x < firstDayIndex; x++) {
-                days.append("<div>"+" &emsp; "+"</div>");
+                days.append("<div class='prev_date'></div>");
             }
 
             for (var i = 1; i <= lastDay; i++) {
@@ -159,6 +160,22 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             }
 			
 		},
+
+        fetch_calendar_events_details(){
+            var self = this
+            var selected_instance = $('#change_instance option:selected').val()
+			return this._rpc({
+                route: '/wk_office365_connector/fetch_calendar_events_details',
+                params:{'instance_id':selected_instance}
+			}).then(function (result) {
+                console.log("Calendar Events:",result)
+                var event = self.$el.find('#event')
+                console.log("Calendar Events:",event)
+                $.each(result,function(index,value){ 
+                    event.append("<div><i class='fa fa-meetup'></i><span><h6>"+value.name+"</h6></span></div>");
+                    })
+			})
+        },
 
 
         change_current_instance(){

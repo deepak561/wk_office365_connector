@@ -107,30 +107,19 @@
     
     
     .month {
-        width: calc(100% / 5);
+        // width: calc(100% / 5);
+        width: 100%;
         background-color:#FFFFFF;
         height: 20px;
         display: flex;
         justify-content: space-between;
     }
 
-    .month_slct {
-        width: 100%;
-    }
-
-    .select_btn{
+    .month div {
+        width: calc(100% / 2);
         display: flex;
-        background-color:#FFFFFF;
-        height: 20px;
-        text-align: right;
-    }
+      }
 
-    .select_btn1{
-        display: flex;
-        background-color:#FFFFFF;
-        height: 20px;
-        text-align: right;
-    }
     
     .month i {
         font-size: 20px;
@@ -138,16 +127,19 @@
         color: #334D6E;
         margin-left: 2px;
         margin-right: 2px;
+        text-align:left;
     }
     .month p {
         height: 21px;
         text-transform: uppercase;
+        text-align:left;
     }
 
     .weekdays {
         width: 100%;
         display: flex;
         padding: 2px;
+        margin: 5px;
       }
       
       .weekdays div {
@@ -157,6 +149,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        margin: 5px;
       }
 
       .days {
@@ -176,6 +169,24 @@
         justify-content: center;
         align-items: center;
       }
+
+      .days div:hover:not(.today):not(.prev_date) {
+        background-color: rgb(16, 247, 255);
+        // border: 1px solid #777;
+        color: #FFFFFF;
+        cursor: pointer;
+      }
+      
+      .today {
+        background-color: #109CF1;
+        color: #FFFFFF;
+      }
+
+      hr {
+        width: 100%;
+        margin-right: auto;
+        margin-left: auto;
+     }
     }
       
 }
