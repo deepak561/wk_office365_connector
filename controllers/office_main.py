@@ -94,6 +94,25 @@ class Office365Main(http.Controller):
 			}
 		sync = bulk_synchronization.create(vals)
 		return {'id':sync.id}
+
+	@http.route('/wk_office365_connector/fetch_calendar_events_details',type='json',auth='user')
+	def fetch_calendar_events_details(self, instance_id=1):
+		current_date = datetime.now().strftime("%d %b %Y")
+		select_sql_clause = """select name,start from calendar_event where id in 
+		(select name from office365_calendar_mapping  where instance_id=%d) and start >= current_date order by start asc limit %d"""%(int(instance_id),5)
+		request.env.cr.execute(select_sql_clause)
+		query_results = request.env.cr.dictfetchall()
+		_logger.info("======================================query_results%r",query_results)
+		res = []
+		for result in query_results:
+			dt = result['start']
+			t = dt.strftime('%d-%m-%y:%H-%M')
+			_logger.info("======================================t%r",t)
+			date,time = t.split(":")
+			_logger.info("=========================date:%r=============time:%r",date,time)
+			data = {'name':result['name'],'date':date,'time':time}
+			res.append(data)
+		return res
 	
 	# @http.route('/wk_office365_connector/fetch_sales_doughnut_data',type='json',auth='user')
 	# def fetch_sales_doughnut_data(self, instance_id=1):
@@ -118,28 +137,26 @@ class Office365Main(http.Controller):
 	# 		data['sale_statuses'].append(check.capitalize())
 	# 	return data
 	
-	# @http.route('/wk_office365_connector/fetch_purchase_doughnut_data',type='json',auth='user')
-	# def fetch_purchase_doughnut_data(self, instance_id=1):
-	# 	color = {
-	# 	'draft':'#45F18A',
-	# 	'purchase':'#007AFF',
-	# 	'done':'#5E2160'
-	# 	}
-	# 	select_sql_clause = """SELECT count(state) as total_state,
-	# 	state 
-	# 	FROM purchase_order where id in 
-	# 	(select name from office365_purchase_order where instance_id=%d)
-	# 	AND state in ('draft','purchase','done')
-	# 	group by state"""%instance_id
-	# 	request.env.cr.execute(select_sql_clause)
-	# 	query_results = request.env.cr.dictfetchall()
-	# 	data = {'purchase_data':{},'purchase_statuses':[],'color':[]}
+	@http.route('/wk_office365_connector/fetch_task_doughnut_data',type='json',auth='user')
+	def fetch_task_doughnut_data(self, instance_id=1):
+		color = {
+		'draft':'#45F18A',
+		'purchase':'#007AFF',
+		'done':'#5E2160'
+		}
+		select_sql_clause = """SELECT count(state) as total_state FROM task_mapping where id in 
+		(select name from office365_task_mapping where instance_id=%d)"""%instance_id
+		request.env.cr.execute(select_sql_clause)
+		query_results = request.env.cr.dictfetchall()
+		data = {'purchase_data':{},'purchase_statuses':[],'color':[]}
+		_logger.error("=========fetch_task_doughnut_data==================================%r",data)
 	# 	purchase_data = {result['state'].strip():result['total_state'] for result in query_results}
 	# 	for check in color:
 	# 		data['purchase_data'][check] = purchase_data.get(check,0)
 	# 		data['color'].append(color[check])
 	# 		data['purchase_statuses'].append(check.capitalize())
 	# 	return data
+		return True
 
 	@http.route('/wk_office365_connector/get_dashboard_line_data',type = 'json', auth = 'user')
 	def get_dashboard_line_data(self,instance_id = 1,month=False,contact=True,calendar=True):
