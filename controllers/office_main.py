@@ -40,7 +40,9 @@ class Office365Main(http.Controller):
 			request.session['instance_id'] = connection.id
 			instance_id = connection.id
 		current_date = datetime.now().strftime("%d %b %Y")
-		return {'instance_id':instance_id,'current_date':current_date}
+		task_states = request.env['office365.instance'].browse(instance_id).task_states
+		_logger.info("======================================task_states%r",task_states.ids)
+		return {'instance_id':instance_id,'current_date':current_date,'task_states':task_states.ids}
 	
 	@http.route('/wk_office365_connector/change_instance_id',type='json',auth='user')
 	def change_instance_id(self,instance_id=1):
@@ -113,50 +115,55 @@ class Office365Main(http.Controller):
 			data = {'name':result['name'],'date':date,'time':time}
 			res.append(data)
 		return res
-	
-	# @http.route('/wk_office365_connector/fetch_sales_doughnut_data',type='json',auth='user')
-	# def fetch_sales_doughnut_data(self, instance_id=1):
-	# 	color = {
-	# 	'draft':'#45F18A',
-	# 	'sale':'#007AFF',
-	# 	'done':'#5E2160'
-	# 	}
-	# 	select_sql_clause = """SELECT count(state) as total_state,
-	# 	state 
-	# 	FROM sale_order where id in 
-	# 	(select name from office365_order where instance_id=%d)
-	# 	AND state in ('draft','sale','done')
-	# 	group by state"""%instance_id
-	# 	request.env.cr.execute(select_sql_clause)
-	# 	query_results = request.env.cr.dictfetchall()
-	# 	data = {'sale_data':{},'sale_statuses':[],'color':[]}
-	# 	sale_data = {result['state'].strip():result['total_state'] for result in query_results}
-	# 	for check in color:
-	# 		data['sale_data'][check] = sale_data.get(check,0)
-	# 		data['color'].append(color[check])
-	# 		data['sale_statuses'].append(check.capitalize())
-	# 	return data
-	
-	@http.route('/wk_office365_connector/fetch_task_doughnut_data',type='json',auth='user')
-	def fetch_task_doughnut_data(self, instance_id=1):
-		color = {
-		'draft':'#45F18A',
-		'purchase':'#007AFF',
-		'done':'#5E2160'
-		}
-		select_sql_clause = """SELECT count(state) as total_state FROM task_mapping where id in 
-		(select name from office365_task_mapping where instance_id=%d)"""%instance_id
+
+
+	@http.route('/wk_office365_connector/fetch_project_details',type='json',auth='user')
+	def fetch_project_details(self, instance_id=1):
+		project = request.env['project.project'].search([])
+		res = []
+
+		select_sql_clause = """select count(pt.name), project_id, otm.odoo_id from office365_project_mapping otm left outer join
+		project_task pt on (otm.name = pt.project_id) where otm.instance_id=%d group by project_id, odoo_id order by pt.project_id asc limit %d"""%(int(instance_id),5)
+
+		# select_sql_clause = """select count(t.name) ,project_id from project_task t inner join 
+		# office365_project_mapping m on (t.project_id = m.name) where m.instance_id=%d group by project_id"""%int(instance_id)
 		request.env.cr.execute(select_sql_clause)
 		query_results = request.env.cr.dictfetchall()
-		data = {'purchase_data':{},'purchase_statuses':[],'color':[]}
-		_logger.error("=========fetch_task_doughnut_data==================================%r",data)
-	# 	purchase_data = {result['state'].strip():result['total_state'] for result in query_results}
-	# 	for check in color:
-	# 		data['purchase_data'][check] = purchase_data.get(check,0)
-	# 		data['color'].append(color[check])
-	# 		data['purchase_statuses'].append(check.capitalize())
-	# 	return data
-		return True
+
+		_logger.info("======================================query_results%r",query_results)
+
+
+		for check in query_results:
+			name = request.env['project.project'].browse(int(check['odoo_id'])).name
+			rec = {
+				'name': name,
+				'vals': check['count']
+			}
+			res.append(rec)
+		_logger.info("======================================res%r",res)
+		return res
+	
+	@http.route('/wk_office365_connector/fetch_task_doughnut_data',type='json',auth='user')
+	def fetch_task_doughnut_data(self, instance_id=1,task_states=[]):
+		color = ('#45F18A','#007AFF','#5E2160')
+		select_sql_clause = """SELECT count(pt.stage_id) as total_stage,pt.stage_id FROM project_task pt inner join
+		office365_task_mapping otm on (pt.id = otm.name) where otm.instance_id=%d AND pt.stage_id in  %r
+		group by stage_id"""%(instance_id,tuple(task_states))
+		request.env.cr.execute(select_sql_clause)
+		query_results = request.env.cr.dictfetchall()
+		data = {'task_data':{},'task_statuses':[],'color':[]}
+
+		_logger.info("=========fetch_task_doughnut_data==================================%r",query_results)
+
+		count = 0
+		for check in query_results:
+			name = request.env['project.task.type'].browse(int(check['stage_id'])).name
+			data['task_data'][name] = check['total_stage']
+			data['color'].append(color[count])
+			data['task_statuses'].append(name.capitalize())
+			count += 1
+		_logger.info("=========fetch_sales_doughnut_data==================================%r",data)
+		return data
 
 	@http.route('/wk_office365_connector/get_dashboard_line_data',type = 'json', auth = 'user')
 	def get_dashboard_line_data(self,instance_id = 1,month=False,contact=True,calendar=True):

@@ -23,7 +23,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 	let office365Dashboard = AbstractAction.extend({
 		template: 'office365_dashboard',
 		jsLibs: [
-			// '/web/static/lib/Chart/Chart.js',
+			'/web/static/lib/Chart/Chart.js',
         ],
         events: {
             'click .open_instance_form':'open_instance_form',
@@ -48,14 +48,14 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 				return self.fetch_instance_id()
 			}).then(function(){
 				return self.fetch_instance_details()
-            // }).then(function(){
-			// 	return self.fetch_calendar_events_details()
-            // }).then(function(){
-            //     return self.get_dashboard_line_data()
-            })
-            // }).then(function(){
-			// 	return self.fetch_task_doughnut_data()
+            }).then(function(){
+				return self.fetch_instance_extra_details()
+            }).then(function(){
+                return self.get_dashboard_line_data()
             // })
+            }).then(function(){
+				return self.fetch_task_doughnut_data()
+            })
             // }).then(function(){
 			// 	return self.fetch_sales_doughnut_data()
             // })
@@ -68,6 +68,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             this._super().then(function () {
                 self.calendar_data()
                 self.fetch_calendar_events_details()
+                self.fetch_project_details()
                 var prev = self.$el.find('.prev')
                 var next = self.$el.find('.next')
                 var days = self.$el.find('#day')
@@ -104,26 +105,26 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 
         calendar_data: function(){
             let self = this;
-            console.log("self.el",self.el)
-            console.log(self.$el)
-            console.log(self)
-            console.log(this)
+            // console.log("self.el",self.el)
+            // console.log(self.$el)
+            // console.log(self)
+            // console.log(this)
             var lastDay = new Date(
                 date.getFullYear(),
                 date.getMonth() + 1,
                 0
             ).getDate();
-            console.log("lastDay",lastDay)
-            console.log("self",self)
+            // console.log("lastDay",lastDay)
+            // console.log("self",self)
             var prevLastDay = new Date(
                 date.getFullYear(),
                 date.getMonth(),
                 0
               ).getDate();
-              console.log("prevLastDay",prevLastDay)
+            //   console.log("prevLastDay",prevLastDay)
             
               var firstDayIndex = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-              console.log("firstDayIndex",firstDayIndex)
+            //   console.log("firstDayIndex",firstDayIndex)
             
               var months = [
                 "January",
@@ -168,11 +169,29 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
                 route: '/wk_office365_connector/fetch_calendar_events_details',
                 params:{'instance_id':selected_instance}
 			}).then(function (result) {
-                console.log("Calendar Events:",result)
+                // console.log("Calendar Events:",result)
                 var event = self.$el.find('#event')
-                console.log("Calendar Events:",event)
+                // console.log("Calendar Events:",event)
                 $.each(result,function(index,value){ 
-                    event.append("<div><i class='fa fa-meetup'></i><span><h6>"+value.name+"</h6></span></div>");
+                    console.log(value)
+                    event.append("<div><div><i class='fa fa-meetup'></i><span>"+value.name+"</span></div><div><p>"+value.date+" &emsp; "+value.time+"</p></div></div>");
+                    })
+			})
+        },
+
+        fetch_project_details(){
+            var self = this
+            var selected_instance = $('#change_instance option:selected').val()
+			return this._rpc({
+                route: '/wk_office365_connector/fetch_project_details',
+                params:{'instance_id':selected_instance}
+			}).then(function (result) {
+                console.log("fetch_project_details Events:",result)
+                var project_stats = self.$el.find('#project_stats')
+                // console.log("Calendar Events:",event)
+                $.each(result,function(index,value){ 
+                    // console.log(value)
+                    project_stats.append("<div><p style='display: inline-block;'>"+value.name+"</p><p style='float: right;'>"+value.vals+"</p></div>");
                     })
 			})
         },
@@ -192,18 +211,29 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
         on_attach_callback () {
             // this.render_line_graph()
             // this.render_sale_graph()
-            // this.render_purchase_graph()
+            let self = this
+            console.log('self.task_states',self.task_states)
+            // if(self.task_states.length < 3){
+            //     var msg = self.$el.find('#office365_task_msg')
+            //     msg.append("<p style='text-align: center;'>"+'Please Select 3 States of Task from the setting!'+"</p>");
+            //     console.log('msg',msg)
+            // }
+            // else{
+                this.render_task_graph()
+
+            // }
         },
         fetch_task_doughnut_data () {
 			let self = this
+            console.log('fetch_task_doughnut_data task_states',self.task_states)
 			return this._rpc({
 				route: '/wk_office365_connector/fetch_task_doughnut_data',
-				params: {'instance_id':self.instance_id}
+				params: {'instance_id':self.instance_id,'task_states':self.task_states}
 			}).then(function (result) {
                 console.log("fetch_task_doughnut_data: ",result)
-				// self.purchase_data = result.purchase_data
-				// self.purchase_statuses = result.purchase_statuses
-				// self.purchase_colors = result.color
+				self.task_data = result.task_data
+				self.task_statuses = result.task_statuses
+				self.task_color = result.color
 			})
         },
         // fetch_sales_doughnut_data () {
@@ -262,51 +292,52 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 		// 		},
 		// 	});
         // },
-        // render_purchase_graph () {
-		// 	let self = this;
-		// 	$('#office365_task').replaceWith($('<canvas/>',{id:'office365_task'}))
-		// 	self.chart = new Chart('office365_task',{
-        //         type: 'doughnut',
-		// 		data: {
-		// 			labels: self.purchase_statuses,
-		// 			datasets: [{
-		// 				data: Object.values(self.purchase_data),
-		// 				backgroundColor:self.purchase_colors
-		// 			}],
-        //         },
-		// 		options: {
-        //             responsive:true,
-        //             maintainAspectRatio: false,
-        //             cutoutPercentage:60,
-        //             title: {
-        //                 display: false,
-        //                 text: 'Purchase Order',
-        //                 fontSize: 15,
-        //             },
-		// 			legend: {
-        //                 display:true,
-        //                 position: 'right',
-        //                 labels:{
-        //                     usePointStyle:true
-        //                 },
-        //             },
-		// 			onClick (e,i){
-		// 				if (i.length) {
-		// 					var state = i[0]['_view']['label']
-		// 					state =  state.toLowerCase();
-		// 					self.call_office365_action(
-		// 						'Purchase Order Mapping',
-		// 						'office365.purchase.order',
-        //                         [['name.state','=',state],
-        //                         ['instance_id','=',self.instance_id]],
-		// 						[[false,'list'],[false,'form']]
+        render_task_graph () {
+			let self = this;
+			$('#office365_task').replaceWith($('<canvas/>',{id:'office365_task'}))
+			self.chart = new Chart('office365_task',{
+                type: 'doughnut',
+				data: {
+					labels: self.task_statuses,
+					datasets: [{
+						data: Object.values(self.task_data),
+						backgroundColor:self.task_color
+					}],
+                },
+				options: {
+                    responsive:true,
+                    maintainAspectRatio: false,
+                    cutoutPercentage:80,
+                    title: {
+                        display: false,
+                        text: 'Project Task',
+                        fontSize: 15,
+                    },
+					legend: {
+                        display:true,
+                        position: 'right',
+                        align: 'start',
+                        labels:{
+                            usePointStyle:true
+                        },
+                    },
+					onClick (e,i){
+						if (i.length) {
+							var state = i[0]['_view']['label']
+							state =  state.toLowerCase();
+							self.call_office365_action(
+								'Project Task Mapping',
+								'office365.task.mapping',
+                                [['name.state','=',state],
+                                ['instance_id','=',self.instance_id]],
+								[[false,'list'],[false,'form']]
 
-		// 					)
-		// 				}
-		// 			},
-		// 		},
-		// 	});
-		// },
+							)
+						}
+					},
+				},
+			});
+		},
         // change_line_graph(ev){
         //     var self = this;
         //     var id = ev.currentTarget.id;
@@ -373,18 +404,19 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
         // options: options
         // }); 
 		// },
-        // get_dashboard_line_data(month=false){
-        //     let self = this;
-		// 	return this._rpc({
-		// 		route:'/wk_office365_connector/get_dashboard_line_data',
-        //         params:{'instance_id':self.instance_id,
-        //     'month':month,
-        //     'contact':self.contact,
-        //     'calendar':self.calendar}
-		// 	}).then(function(result){
-        //         self.line_data = result.data
-        //     });
-        // },
+        get_dashboard_line_data(month=false){
+            let self = this;
+			return this._rpc({
+				route:'/wk_office365_connector/get_dashboard_line_data',
+                params:{'instance_id':self.instance_id,
+            'month':month,
+            'contact':self.contact,
+            'calendar':self.calendar}
+			}).then(function(result){
+                self.line_data = result.data
+                console.log("get_dashboard_line_data",result)
+            });
+        },
         open_wizard_import(ev){
             let self = this;
 			return this._rpc({
@@ -427,6 +459,8 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
                 params:{instance_id:self.instance_id}
 			}).then(function (result) {
 				self.extra_data = result
+                self.contact_count = result.contact.count
+                console.log("fetch_instance_extra_details",result.contact.count)
 			})
 
         },
@@ -437,6 +471,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 			}).then(function (result) {
                 self.instance_id = result.instance_id
                 self.current_date = result.current_date
+                self.task_states = result.task_states
 			})
         },
         call_office365_action(name, res_model, domain, view_type, res_id=false,nodestroy=false,target='self'){
