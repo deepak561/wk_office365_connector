@@ -107,7 +107,6 @@
     
     
     .month {
-        // width: calc(100% / 5);
         width: 100%;
         background-color:#FFFFFF;
         height: 20px;
@@ -116,23 +115,27 @@
     }
 
     .month div {
-        width: calc(100% / 2);
         display: flex;
       }
 
-    
     .month i {
         font-size: 20px;
         cursor: pointer;
         color: #334D6E;
-        margin-left: 2px;
-        margin-right: 2px;
-        text-align:left;
     }
+    
+    .prev {
+        margin-right: 10px;
+    }
+
+    .next {
+        margin-left: 10px;
+    }
+
     .month p {
         height: 21px;
         text-transform: uppercase;
-        text-align:left;
+        text-align:center;
     }
 
     .weekdays {
@@ -144,7 +147,6 @@
       
       .weekdays div {
         font-size: 15px;
-        // letter-spacing: 0.1rem;
         width: calc(100% / 7);
         display: flex;
         justify-content: center;
@@ -161,10 +163,8 @@
       
       .days div {
         font-size: 15px;
-        // margin: 0.3rem;
         width: calc(100% / 7);
         padding: 2px;
-        // height: 5rem;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -172,7 +172,6 @@
 
       .days div:hover:not(.today):not(.prev_date) {
         background-color: rgb(16, 247, 255);
-        // border: 1px solid #777;
         color: #FFFFFF;
         cursor: pointer;
       }

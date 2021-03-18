@@ -19,6 +19,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 
     var date = new Date();
     console.log("Date",date)
+    var mnth = false
 
 	let office365Dashboard = AbstractAction.extend({
 		template: 'office365_dashboard',
@@ -33,7 +34,8 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             'change #line_obj_change':'reload_line_graph',
             'change #change_instance':'change_current_instance',
             'click .change_graph':'change_line_graph',
-            'click #click_setting':'open_instance_setting'
+            'click #click_setting':'open_instance_setting',
+            'click #click_button':'open_list_view',
 		},
         willStart: function () {
             var self = this;
@@ -52,36 +54,51 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 				return self.fetch_instance_extra_details()
             }).then(function(){
                 return self.get_dashboard_line_data()
-            // })
             }).then(function(){
 				return self.fetch_task_doughnut_data()
+            // }).then(function(){
+            //     return self.calender_month_detail()
             })
-            // }).then(function(){
-			// 	return self.fetch_sales_doughnut_data()
-            // })
-            // }).then(function(){
-            //     return self.calendar_data()
-            // })
         },
         start: function(){
             var self = this;
             this._super().then(function () {
                 self.calendar_data()
+                // self.calender_month_detail()
                 self.fetch_calendar_events_details()
                 self.fetch_project_details()
                 var prev = self.$el.find('.prev')
                 var next = self.$el.find('.next')
                 var days = self.$el.find('#day')
+                var btn_odoo = self.$el.find('#btn_odoo')
+                var btn_office365 = self.$el.find('#btn_office365')
+                btn_odoo.addClass('btn-info')
+                btn_odoo.on('click',function(){
+                    btn_office365.removeClass('btn-info')
+                    btn_odoo.addClass('btn-info')
+                    self.from_calendar = 'export'
+                    self.fetch_calendar_events_details()
+                })
+                btn_office365.on('click',function(){
+                    btn_odoo.removeClass('btn-info')
+                    btn_office365.addClass('btn-info')
+                    self.from_calendar = 'import'
+                    self.fetch_calendar_events_details()
+                })
                 prev.on('click',function(){
-                    console.log("Clicked")
+                    mnth = date.getMonth() - 1;
                     days.empty();
                     date.setMonth(date.getMonth() - 1);
+                    console.log("Clicked:",mnth)
+                    // self.calender_month_detail()
                     self.calendar_data()
                 })
                 next.on('click',function(){
-                    console.log("Clicked")
+                    mnth = date.getMonth() + 1;
                     days.empty();
                     date.setMonth(date.getMonth() + 1);
+                    console.log("Clicked:",mnth)
+                    // self.calender_month_detail()
                     self.calendar_data()
                 })
             })
@@ -103,28 +120,40 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 			
 		},
 
+        calender_month_detail(){
+            var self = this
+            var selected_instance = $('#change_instance option:selected').val()
+            console.log('calender_month_detail:',mnth)
+            if (mnth==0){
+                mnth = mnth+1;
+            }
+			return this._rpc({
+                route: '/wk_office365_connector/calender_month_detail',
+                params:{'instance_id':selected_instance,'created_by':self.from_calendar,'month':mnth}
+			}).then(function (result) {
+                console.log('calender_month_detail:',result)
+                    self.sel_month = result.month;
+                    self.sel_date = result.date
+                    if (mnth){
+                        self.calendar_data()
+                    }
+			})
+        },
+
         calendar_data: function(){
             let self = this;
-            // console.log("self.el",self.el)
-            // console.log(self.$el)
-            // console.log(self)
-            // console.log(this)
             var lastDay = new Date(
                 date.getFullYear(),
                 date.getMonth() + 1,
                 0
             ).getDate();
-            // console.log("lastDay",lastDay)
-            // console.log("self",self)
             var prevLastDay = new Date(
                 date.getFullYear(),
                 date.getMonth(),
                 0
               ).getDate();
-            //   console.log("prevLastDay",prevLastDay)
             
               var firstDayIndex = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-            //   console.log("firstDayIndex",firstDayIndex)
             
               var months = [
                 "January",
@@ -140,24 +169,42 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
                 "November",
                 "December",
               ];
+            self.mnth_nm = months[mnth]
             var month_name = self.$el.find('#month_name')
             month_name.html(months[date.getMonth()])
             var days = self.$el.find('#day')
-            console.log("days",days)
+            console.log("calendar_data0",self.sel_date)
+            console.log("calendar_data1",self.sel_month)
+            console.log("calendar_data2",date.getMonth())
 
             for (var x = 0; x < firstDayIndex; x++) {
                 days.append("<div class='prev_date'></div>");
             }
 
             for (var i = 1; i <= lastDay; i++) {
+                
                 if (
                 i === new Date().getDate() &&
                 date.getMonth() === new Date().getMonth()
                 ) {
-                    days.append("<div class='today'>"+i+"</div>");
+                    days.append("<div id="+i+"_"+date.getMonth()+" class='today'>"+i+"</div>");
                 } else {
-                    days.append("<div>"+i+"</div>");
+                    days.append("<div id="+i+"_"+date.getMonth()+">"+i+"</div>");
                 }
+                // if (self.sel_date.length > 0){
+                //     $.each(self.sel_date,function(index,value){ 
+                //         if(date.getMonth() == self.sel_month && i == value){
+                            
+                //             var day_id = (i+"_"+date.getMonth())
+                //             if (day_id){
+                //                 console.log("calendar_data3",day_id)
+                //                 day_id = '#'+day_id;
+                //                 var evnts = self.$el.find(day_id)
+                //                 evnts.addClass('today')
+                //             }
+                //         }
+                //         })
+                // }
             }
 			
 		},
@@ -167,17 +214,20 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             var selected_instance = $('#change_instance option:selected').val()
 			return this._rpc({
                 route: '/wk_office365_connector/fetch_calendar_events_details',
-                params:{'instance_id':selected_instance}
+                params:{'instance_id':selected_instance,'created_by':self.from_calendar}
 			}).then(function (result) {
-                // console.log("Calendar Events:",result)
                 var event = self.$el.find('#event')
-                // console.log("Calendar Events:",event)
+                event.empty();
                 $.each(result,function(index,value){ 
                     console.log(value)
-                    event.append("<div><div><i class='fa fa-meetup'></i><span>"+value.name+"</span></div><div><p>"+value.date+" &emsp; "+value.time+"</p></div></div>");
+                    // event.append("<div> <img class='icon_normal' src='/wk_office365_connector/static/src/img/icon_office365.png'/><div style='display:inline-block;'><h6>"+value.name+"</h6><p>"+value.time+" &emsp; "+value.date+"</p></div></div>");
+                    event.append("<div class='row'><div class='col-lg-1'><img src='/wk_office365_connector/static/src/img/icon_office365.png'/></div><div class='col-lg-11'><div style='display:inline-block;'><h6>"+value.name+"</h6><div><p>"+value.time+" &emsp; "+value.date+"</P></div></div></div>");
                     })
 			})
         },
+
+
+        
 
         fetch_project_details(){
             var self = this
@@ -188,9 +238,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 			}).then(function (result) {
                 console.log("fetch_project_details Events:",result)
                 var project_stats = self.$el.find('#project_stats')
-                // console.log("Calendar Events:",event)
                 $.each(result,function(index,value){ 
-                    // console.log(value)
                     project_stats.append("<div><p style='display: inline-block;'>"+value.name+"</p><p style='float: right;'>"+value.vals+"</p></div>");
                     })
 			})
@@ -219,6 +267,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             //     console.log('msg',msg)
             // }
             // else{
+                this._chartRegistry()
                 this.render_task_graph()
 
             // }
@@ -231,179 +280,106 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
 				params: {'instance_id':self.instance_id,'task_states':self.task_states}
 			}).then(function (result) {
                 console.log("fetch_task_doughnut_data: ",result)
-				self.task_data = result.task_data
-				self.task_statuses = result.task_statuses
-				self.task_color = result.color
+                var res = ''
+                res = result.data
+				self.task_data = res.task_data
+				self.task_statuses = res.task_statuses
+				self.task_color = res.color
+                self.task_msg =('Total Task \n').concat(result.total.toString())
 			})
         },
-        // fetch_sales_doughnut_data () {
-		// 	let self = this
-		// 	return this._rpc({
-		// 		route: '/wk_office365_connector/fetch_sales_doughnut_data',
-		// 		params: {'instance_id':self.instance_id}
-		// 	}).then(function (result) {
-		// 		self.sale_data = result.sale_data
-		// 		self.sale_statuses = result.sale_statuses
-		// 		self.sale_colors = result.color
-		// 	})
-		// },
-        // render_sale_graph () {
-		// 	let self = this;
-		// 	$('#office365_sale_order').replaceWith($('<canvas/>',{id:'office365_sale_order'}))
-		// 	self.chart = new Chart('office365_sale_order',{
-		// 		type: 'doughnut',
-		// 		data: {
-		// 			labels: self.sale_statuses,
-		// 			datasets: [{
-		// 				data: Object.values(self.sale_data),
-		// 				backgroundColor:self.sale_colors
-		// 			}],
-		// 		},
-		// 		options: {
-        //             responsive:true,
-        //             cutoutPercentage:60,
-        //             maintainAspectRatio: false,
-        //             title: {
-        //                 display: false,
-        //                 text: 'Sale Order',
-        //                 fontSize: 15,
-        //             },
-		// 			legend: {
-        //                 display:true,
-        //                 position: 'right',
-        //                 labels:{
-        //                     usePointStyle:true
-        //                 },
-		// 			},
-		// 			onClick (e,i){
-		// 				if (i.length) {
-		// 					var state = i[0]['_view']['label']
-		// 					state =  state.toLowerCase();
-		// 					self.call_office365_action(
-		// 						'Order Mapping',
-		// 						'office365.order',
-        //                         [['name.state','=',state],
-        //                         ['instance_id','=',self.instance_id]],
-		// 						[[false,'list'],[false,'form']]
 
-		// 					)
-		// 				}
-		// 			},
-		// 		},
-		// 	});
-        // },
+        open_list_view(ev){
+			let self = this;
+			var domain = [];
+			var view_type = [[false,'list'],[false,'form']];
+			var model = false;
+			var name = 'Office 365 Project Mapping';
+			model = 'office365.project.mapping'
+			return self.call_office365_action(name, model, domain, view_type);
+		},
         render_task_graph () {
 			let self = this;
 			$('#office365_task').replaceWith($('<canvas/>',{id:'office365_task'}))
 			self.chart = new Chart('office365_task',{
-                type: 'doughnut',
+				type: 'doughnut',
 				data: {
 					labels: self.task_statuses,
 					datasets: [{
 						data: Object.values(self.task_data),
 						backgroundColor:self.task_color
 					}],
-                },
+				},
 				options: {
                     responsive:true,
-                    maintainAspectRatio: false,
-                    cutoutPercentage:80,
-                    title: {
-                        display: false,
-                        text: 'Project Task',
-                        fontSize: 15,
-                    },
+					maintainAspectRatio: false,
 					legend: {
-                        display:true,
+						display:true,
                         position: 'right',
                         align: 'start',
                         labels:{
                             usePointStyle:true
                         },
-                    },
-					onClick (e,i){
-						if (i.length) {
-							var state = i[0]['_view']['label']
-							state =  state.toLowerCase();
-							self.call_office365_action(
-								'Project Task Mapping',
-								'office365.task.mapping',
-                                [['name.state','=',state],
-                                ['instance_id','=',self.instance_id]],
-								[[false,'list'],[false,'form']]
-
-							)
+					},
+					cutoutPercentage:80,
+					elements:{
+						center: {
+							text: _t(self.task_msg),
 						}
 					},
+					onClick (e,i){
+                        if (i.length) {
+                            var state = i[0]['_view']['label']
+                            state =  state.toLowerCase();
+                            self.call_office365_action(
+                                'Project Task Mapping',
+                                'office365.task.mapping',
+                                [['name.stage_id.name','ilike',state],
+                                ['instance_id','=',self.instance_id]],
+                                [[false,'list'],[false,'form']]
+
+                            )
+                            console.log("")
+                        }
+                    },
 				},
 			});
 		},
-        // change_line_graph(ev){
-        //     var self = this;
-        //     var id = ev.currentTarget.id;
-        //     if(id=='contact'){
-        //         if(self.contact==false){
-        //             self.contact=true;
-        //             $(ev.currentTarget).css('textDecoration','none');
-        //         }else{
-        //             self.contact=false;
-        //             $(ev.currentTarget).css('textDecoration','line-through');
-        //         }
-        //     }else{
-        //         if(self.calendar==false){
-        //             self.calendar=true;
-        //             $(ev.currentTarget).css('textDecoration','none');
-        //         }else{
-        //             self.calendar=false;
-        //             $(ev.currentTarget).css('textDecoration','line-through');
-        //         }
-        //     }
-        //     return $.when().then(function(){
-        //         return self.reload_line_graph()
-        //     })
-        // },
-        // reload_line_graph () {
-		// 	var self = this
-        //     var selected_option = $('#line_obj_change option:selected').val()
-        //     if(selected_option=='zero')
-        //         selected_option = false;
-        //     return $.when().then(function(){
-        //         return self.get_dashboard_line_data(selected_option)
-        //     }).then(function(){
-        //         return self.render_line_graph()
-        //     })
-        // },
-        // render_line_graph () {
-		// 	$('#line_chart').replaceWith($('<canvas/>',{id: 'line_chart'}))
-        //     var self = this
-        //     var data = self.line_data;
-        //     var options= {
-        //         maintainAspectfirefoxRatio: false,
-        //         legend: {
-        //             display: false,
-        //         },
-        //         scales: {
-        //             xAxes: [{
-        //                 gridLines: {
-        //                     display: false,
-        //                 },
-        //             }],
-        //             yAxes: [{
-        //                 gridLines: {
-        //                     display: false,
-        //                 },
-        //                 ticks: {
-        //                     precision: 0,
-        //                 },
-        //             }],
-        //         },
-        // };
-        // var myBarChart = new Chart('line_chart', {
-        // type: 'line',
-        // data: data,
-        // options: options
-        // }); 
-		// },
+
+        _chartRegistry: function () {
+			Chart.pluginService.register({
+			  beforeDraw: function (chart) {
+				if (chart.config.options.elements.center) {
+				  var ctx = chart.chart.ctx;
+				  var centerConfig = chart.config.options.elements.center;
+				  var txt = centerConfig.text;
+				  var color = '#555555';
+				  var sidePadding = centerConfig.sidePadding || 30;
+				  var sidePaddingCalculated = (sidePadding/100) * (chart.innerRadius * 2);
+				  ctx.font = "15px Montserrat";
+				  var stringWidth = ctx.measureText(txt).width;
+				  var elementWidth = (chart.innerRadius * 2) - sidePaddingCalculated;
+				  var widthRatio = elementWidth / stringWidth;
+				  var newFontSize = Math.floor(30 * widthRatio);
+				  var elementHeight = (chart.innerRadius * 2);
+				  var fontSizeToUse = Math.min(newFontSize, elementHeight);
+				  ctx.textAlign = 'center';
+				  ctx.textBaseline = 'middle';
+				  ctx.overflow = 'hidden';
+				  var centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
+				  var centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
+				  ctx.fillStyle = color;
+				  ctx.shadowColor = '#FFFFFF';
+				  ctx.shadowBlur = 25;
+				  ctx.shadowOffsetX = 2;
+				  ctx.shadowOffsetY = 2;
+				  ctx.fillText(txt, centerX, centerY);
+				}
+			  },
+			});
+		  },
+
+
         get_dashboard_line_data(month=false){
             let self = this;
 			return this._rpc({
@@ -458,9 +434,14 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
                 route: '/wk_office365_connector/fetch_instance_extra_details',
                 params:{instance_id:self.instance_id}
 			}).then(function (result) {
-				self.extra_data = result
-                self.contact_count = result.contact.count
-                console.log("fetch_instance_extra_details",result.contact.count)
+				self.extra_data = result.data
+                self.contact_count = result.data.contact.count
+                self.odoo_contact = result.odoo_contact
+                self.office_contact = result.data.contact.count - result.odoo_contact
+                // self.contact_count = 0
+                // self.odoo_contact = 0
+                // self.office_contact = 0
+                console.log("fetch_instance_extra_details",result)
 			})
 
         },
