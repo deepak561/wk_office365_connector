@@ -20,6 +20,22 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
     var date = new Date();
     console.log("Date",date)
     var mnth = false
+    var flag= false
+
+    var months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
 
 	let office365Dashboard = AbstractAction.extend({
 		template: 'office365_dashboard',
@@ -63,8 +79,8 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
         start: function(){
             var self = this;
             this._super().then(function () {
-                self.calendar_data()
-                // self.calender_month_detail()
+                // self.calendar_data()
+                self.calender_month_detail()
                 self.fetch_calendar_events_details()
                 self.fetch_project_details()
                 var prev = self.$el.find('.prev')
@@ -78,28 +94,32 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
                     btn_odoo.addClass('btn-info')
                     self.from_calendar = 'export'
                     self.fetch_calendar_events_details()
+                    days.empty();
+                    self.calender_month_detail()
                 })
                 btn_office365.on('click',function(){
                     btn_odoo.removeClass('btn-info')
                     btn_office365.addClass('btn-info')
                     self.from_calendar = 'import'
                     self.fetch_calendar_events_details()
+                    days.empty();
+                    self.calender_month_detail()
                 })
                 prev.on('click',function(){
                     mnth = date.getMonth() - 1;
                     days.empty();
                     date.setMonth(date.getMonth() - 1);
                     console.log("Clicked:",mnth)
-                    // self.calender_month_detail()
-                    self.calendar_data()
+                    self.calender_month_detail()
+                    // self.calendar_data()
                 })
                 next.on('click',function(){
                     mnth = date.getMonth() + 1;
                     days.empty();
                     date.setMonth(date.getMonth() + 1);
                     console.log("Clicked:",mnth)
-                    // self.calender_month_detail()
-                    self.calendar_data()
+                    self.calender_month_detail()
+                    // self.calendar_data()
                 })
             })
         },
@@ -124,19 +144,16 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             var self = this
             var selected_instance = $('#change_instance option:selected').val()
             console.log('calender_month_detail:',mnth)
-            if (mnth==0){
-                mnth = mnth+1;
-            }
 			return this._rpc({
                 route: '/wk_office365_connector/calender_month_detail',
-                params:{'instance_id':selected_instance,'created_by':self.from_calendar,'month':mnth}
+                params:{'instance_id':selected_instance,'created_by':self.from_calendar,'month':months[date.getMonth()]}
 			}).then(function (result) {
                 console.log('calender_month_detail:',result)
                     self.sel_month = result.month;
                     self.sel_date = result.date
-                    if (mnth){
+                    // if (flag){
                         self.calendar_data()
-                    }
+                    // }
 			})
         },
 
@@ -155,20 +172,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
             
               var firstDayIndex = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
             
-              var months = [
-                "January",
-                "February",
-                "March",
-                "April",
-                "May",
-                "June",
-                "July",
-                "August",
-                "September",
-                "October",
-                "November",
-                "December",
-              ];
+              
             self.mnth_nm = months[mnth]
             var month_name = self.$el.find('#month_name')
             month_name.html(months[date.getMonth()])
@@ -191,21 +195,23 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
                 } else {
                     days.append("<div id="+i+"_"+date.getMonth()+">"+i+"</div>");
                 }
-                // if (self.sel_date.length > 0){
-                //     $.each(self.sel_date,function(index,value){ 
-                //         if(date.getMonth() == self.sel_month && i == value){
+                if (self.sel_date.length > 0){
+                    $.each(self.sel_date,function(index,value){ 
+                        if(date.getMonth() == self.sel_month && i == value){
                             
-                //             var day_id = (i+"_"+date.getMonth())
-                //             if (day_id){
-                //                 console.log("calendar_data3",day_id)
-                //                 day_id = '#'+day_id;
-                //                 var evnts = self.$el.find(day_id)
-                //                 evnts.addClass('today')
-                //             }
-                //         }
-                //         })
-                // }
+                            var day_id = (i+"_"+date.getMonth())
+                            if (day_id){
+                                console.log("calendar_data3",day_id)
+                                day_id = '#'+day_id;
+                                var evnts = self.$el.find(day_id)
+                                evnts.addClass('evnts')
+                            }
+                        }
+                        })
+                }
             }
+
+            flag = true
 			
 		},
 
@@ -221,7 +227,7 @@ odoo.define('wk_office365_connector.office365.dashboard',function (require) {
                 $.each(result,function(index,value){ 
                     console.log(value)
                     // event.append("<div> <img class='icon_normal' src='/wk_office365_connector/static/src/img/icon_office365.png'/><div style='display:inline-block;'><h6>"+value.name+"</h6><p>"+value.time+" &emsp; "+value.date+"</p></div></div>");
-                    event.append("<div class='row'><div class='col-lg-1'><img src='/wk_office365_connector/static/src/img/icon_office365.png'/></div><div class='col-lg-11'><div style='display:inline-block;'><h6>"+value.name+"</h6><div><p>"+value.time+" &emsp; "+value.date+"</P></div></div></div>");
+                    event.append("<div class='row'><div class='col-lg-1'><img src='/wk_office365_connector/static/src/img/icon_office.png'/></div><div class='col-lg-11'><div style='display:inline-block;'><h6>"+value.name+"</h6><div><p>"+" &emsp; "+value.time+" &emsp; "+value.date+"</P></div></div></div>");
                     })
 			})
         },
