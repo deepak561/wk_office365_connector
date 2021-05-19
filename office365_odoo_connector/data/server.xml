@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+<odoo>
+	<data noupdate="1" >
+		<act_window
+			id           ="export_odoo_office365_contact_action"
+			name         ="Export Contatcs To Office365"
+			binding_model="res.partner"
+			res_model    ="office365.manual.synchronisation"
+			view_mode    ="form"
+			target       ="new"
+		/>
+        <act_window
+			id           ="export_odoo_office365_calendar_action"
+			name         ="Export Calendars To Office365"
+			binding_model="calendar.event"
+			res_model    ="office365.manual.synchronisation"
+			view_mode    ="form"
+			target       ="new"
+		/>
+        <act_window
+			id           ="export_odoo_office365_project_action"
+			name         ="Export Proejcts To Office365"
+			binding_model="project.project"
+			res_model    ="office365.manual.synchronisation"
+			view_mode    ="form"
+			target       ="new"
+		/>
+        <act_window
+			id           ="export_odoo_office365_task_action"
+			name         ="Export Tasks To Office365"
+			binding_model="project.task"
+			res_model    ="office365.manual.synchronisation"
+			view_mode    ="form"
+			target       ="new"
+		/>
+	</data>
+</odoo>

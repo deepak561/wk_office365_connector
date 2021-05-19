@@ -1,0 +1,89 @@
+<odoo>
+	<data>
+       <!-- Import Crons -->
+        <record id="ir_cron_office365_contact" model="ir.cron">
+            <field name="name">Office365: Import Contacts From Office365</field>
+            <field name="model_id" ref="office365_odoo_connector.model_office365_synchronization"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_data_of_office365('contact','importContactLimit','import')</field>
+			<field name="interval_number">5</field>
+            <field name="interval_type">hours</field>
+			<field name="active" eval="False"/>
+            <field name="numbercall">-1</field>
+        </record>
+
+		<record id="ir_cron_office365_calendar" model="ir.cron">
+            <field name="name">Office365: Import Calendar From office365</field>
+            <field name="model_id" ref="office365_odoo_connector.model_office365_synchronization"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_data_of_office365('calendar','importCalendarLimit','import')</field>
+			<field name="interval_number">5</field>
+            <field name="interval_type">hours</field>
+			<field name="active" eval="False"/>
+            <field name="numbercall">-1</field>
+        </record>
+        <record id="ir_cron_office365_project" model="ir.cron">
+            <field name="name">Office365: Import Projects From office365</field>
+            <field name="model_id" ref="office365_odoo_connector.model_office365_synchronization"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_data_of_office365('project','importProjectLimit','import')</field>
+			<field name="interval_number">5</field>
+			<field name="active" eval="False"/>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+        </record>
+        <record id="ir_cron_office365_task" model="ir.cron">
+            <field name="name">Office365: Import Task From office365</field>
+            <field name="model_id" ref="office365_odoo_connector.model_office365_synchronization"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_data_of_office365('task','importTaskLimit','import')</field>
+			<field name="interval_number">5</field>
+			<field name="active" eval="False"/>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+        </record>
+
+        <!-- Export Crons -->
+        <record id="ir_cron_office365_contact_export" model="ir.cron">
+            <field name="name">Office365: Export Contacts From office365</field>
+            <field name="model_id" ref="office365_odoo_connector.model_office365_synchronization"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_data_of_office365('contact','importContactLimit')</field>
+			<field name="interval_number">5</field>
+            <field name="interval_type">hours</field>
+			<field name="active" eval="False"/>
+            <field name="numbercall">-1</field>
+        </record>
+
+		<record id="ir_cron_office365_calendar_export" model="ir.cron">
+            <field name="name">Office365: Export Calendar From office365</field>
+            <field name="model_id" ref="office365_odoo_connector.model_office365_synchronization"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_data_of_office365('calendar','importCalendarLimit')</field>
+			<field name="interval_number">5</field>
+            <field name="interval_type">hours</field>
+			<field name="active" eval="False"/>
+            <field name="numbercall">-1</field>
+        </record>
+        <record id="ir_cron_office365_project_export" model="ir.cron">
+            <field name="name">Office365: Export Projects From office365</field>
+            <field name="model_id" ref="office365_odoo_connector.model_office365_synchronization"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_data_of_office365('project','importProjectLimit')</field>
+			<field name="interval_number">5</field>
+			<field name="active" eval="False"/>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+        </record>
+        <record id="ir_cron_office365_task_export" model="ir.cron">
+            <field name="name">Office365: Export Tasks From office365</field>
+            <field name="model_id" ref="office365_odoo_connector.model_office365_synchronization"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_data_of_office365('task','importTaskLimit')</field>
+			<field name="interval_number">5</field>
+			<field name="active" eval="False"/>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+        </record>
+	</data>
+</odoo>
