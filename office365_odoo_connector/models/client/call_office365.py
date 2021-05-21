@@ -3,14 +3,16 @@ import logging
 import requests
 from .exceptions import Office365RestApiError,Office365ResyncError
 _logger = logging.getLogger(__name__)
-
+headers = {'User-agent': 'Office365: Python Office365 Library'}
+client = None
 
 class CallOffice365Api(models.TransientModel):
 	_name = 'call.office365'
 	_description = 'Class Use To Call Office365 Api Methods'
 
-	headers = {'User-agent': 'Office365: Python Office365 Library'}
-	client = None
+	# headers = {'User-agent': 'Office365: Python Office365 Library'}
+	# global client
+	# client = None
 
 	@api.model
 	def _parse_error(self, content):
@@ -94,11 +96,12 @@ class CallOffice365Api(models.TransientModel):
 		@return: dictionary content and binary data content of the response
 		"""
 		context = self._context.copy() or {}
-		if self.client==None:
-			self.client = requests.Session()
-		request_headers = self.headers.copy()
+		global client
+		if client == None:
+			client = requests.Session()
+		request_headers = headers.copy()
 		request_headers.update(headers)
-		r = self.client.request(method, url, data=data, headers=request_headers)
+		r = client.request(method, url, data=data, headers=request_headers)
 		try:
 			content = self._check_status_code(r, method, url)
 			return content
